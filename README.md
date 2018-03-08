@@ -1,4 +1,4 @@
-Intro:
+# Intro
 
 Shim is a configuration management language which is subset of the Clojure language, it should be possible to run from any language that support the Clojure LISP dialect.
 
@@ -9,6 +9,8 @@ The project main targets are:
 * Simple to operate and deploy.
 * REPL first workflow.
 * Debug and tracing built in.
+
+# Resources 
 
 Shim will include the following resources:
 
@@ -22,6 +24,7 @@ Shim will include the following resources:
 * Download for performing file download operations.
 * Checksum for verifying files.
 
+# The language
 
 Shim requires from the host language to support:
 
