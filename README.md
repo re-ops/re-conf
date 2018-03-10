@@ -10,7 +10,7 @@ Shim aims to be:
 * REPL first workflow.
 * Debug and tracing built in.
 
-It does not aim to be:
+It does not be:
 
 * Magical
 * A data format
