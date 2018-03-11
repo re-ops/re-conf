@@ -1,12 +1,13 @@
-
+#! /usr/bin/env hy
 (import hy)
 
-(defmacro ns [n rs]
-  )
+(eval (hy.lex.tokenize (.read (open "src/shim/basic.clj" "r"))))
+
+(defmacro ns [n rs])
 
 (defn println [s]
   (print s))
 
 (defmain [&rest args]
-  (install-tmux)
- )
+  (install-tmux))
+
