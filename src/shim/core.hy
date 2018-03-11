@@ -3,6 +3,7 @@
 (require [hy.contrib.walk [let]])
 (import hy)
 (import pprint)
+(import subprocess)
 
 (defmacro ns [n rs])
 
@@ -10,9 +11,13 @@
   [res src]
   {:result :ok})
 
+(defn facts []
+  (subprocess.check-call "facter" "--json")
+  )
 (defn install
   ([p] (install None p))
   ([res p]
+    (subprocess.check-call "" "-la")
      {:result :ok}))
 
 (defn pretty [res s]
