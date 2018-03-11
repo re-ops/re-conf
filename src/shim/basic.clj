@@ -1,2 +1,3 @@
 (defn install-tmux []
-   (println "installing"))
+  (-> (install "tmux") (pretty "done installing tmux")) 
+  )
