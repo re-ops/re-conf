@@ -54,10 +54,18 @@ Possibly:
 Pipelines are used to construct workflow:
 
 ```clojure
-  (defn install-tmux
+ (defn tmux
    (-> (package "tmux") (template "~/.tmux.conf") (print "tmux installed"))
 
+ (defn packer
+   (let [url "https://releases.hashicorp.com/packer/1.2.1/packer_1.2.1_linux_amd64.zip"
+         sum "dd90f00b69c4d8f88a8d657fff0bb909c77ebb998afd1f77da110bc05e2ed9c3"]
+    (-> (download url) (verify sum) (extract "/opt/packer")
+        (link "/opt/packer/bin/packer" "/bin/packer")  (print "packer ready"))
+
 ```
+
+
 
 # Copyright and license
 
