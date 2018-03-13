@@ -1,2 +1,5 @@
 .virtualenv
 *.pyc
+target
+node_modules
+figwheel_server.log
