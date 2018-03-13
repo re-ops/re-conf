@@ -5,14 +5,14 @@ Shim is a configuration management language which is subset of the Clojure langu
 Shim aims to be:
 
 * Fast
-* Portable (is should run on any hardware and Unix like OS).
+* Portable (should run on any hardware and Unix like OS).
 * Simple to operate and deploy.
 * REPL first workflow.
 * Debug and tracing built in.
 
-It does not be:
+Non goals:
 
-* Magical
+* Be Magical
 * A data format
 * A DSL
 
@@ -34,12 +34,11 @@ Shim will include the following resources:
 
 Shim requires from the host language to support:
 
-* run and | macro support
-* let statements
+* ->
+* let
 * {} []
-* ns support
 * def and defn
-* map, reduce functions
+* map, reduce
 
 A list of host language include https://github.com/chr15m/awesome-clojure-likes, we will probably support:
 
@@ -55,12 +54,8 @@ Possibly:
 Pipelines are used to construct workflow:
 
 ```clojure
- (ns foo
-   (:require 
-     (shim :refer :all))
-
- (defn setup-foo
-   (run (package "foo") | (template "/etc/foo.conf") | (service "foo" :restart)))
+  (defn install-tmux
+   (-> (package "tmux") (template "~/.tmux.conf") (print "tmux installed"))
 
 ```
 
