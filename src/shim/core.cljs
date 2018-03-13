@@ -1,15 +1,11 @@
 (ns shim.core
-  (:require [cljs.nodejs :as nodejs]
-            [goog.object :as gobj]
-            [goog.string :as gstring]
-            [clojure.string :as string]))
+  (:require [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
 
-(println "Hello from the Node!")
+(defn hey [] (println "heyy"))
 
-(defn helper [] "hey there")
-
-(def -main (fn [] nil))
+(defn -main []
+  (println "Hello world!"))
 
 (set! *main-cli-fn* -main)

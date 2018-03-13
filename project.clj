@@ -1,26 +1,41 @@
-(defproject shime "0.0.1"
-    :min-lein-version "2.7.1"
+(defproject shim "0.0.1"
+  :description "Portable configuration management language"
+  :url "https://github.com/narkisr/shim"
+  :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
+
+  :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.clojure/clojurescript "1.9.229"]]
+                 [org.clojure/clojurescript "1.10.126"]]
 
-  :plugins [[lein-figwheel "0.5.9"]]
+  :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
+            [lein-figwheel "0.5.14"]]
 
   :source-paths ["src"]
 
-  :cljsbuild {:builds
-              [{:id "node-dev"
-                :source-paths ["src"]
-                :figwheel true
-                :compiler {:main shim.core
-                           :asset-path "target/js/compiled/out"
-                           :output-to  "target/js/compiled/node_example.js"
-                           :output-dir "target/js/compiled/out"
-                           :source-map-timestamp true
-                           ;; !!! need to set the target to :nodejs !!!
-                           :target :nodejs}}]}
+  :clean-targets ["server.js" "target"]
 
-  :profiles {:dev {:dependencies [[figwheel-sidecar "0.5.9"]
-                                  [com.cemerick/piggieback "0.2.1"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
-)
+  :cljsbuild {
+    :builds [{:id "dev"
+              :source-paths ["src"]
+              :figwheel true
+              :compiler {
+                :main shim.core
+                :asset-path "target/js/compiled/dev"
+                :output-to "target/js/compiled/shim.js"
+                :output-dir "target/js/compiled/dev"
+                :target :nodejs
+                :optimizations :none
+                :source-map-timestamp true}}
+             {:id "prod"
+              :source-paths ["src"]
+              :compiler {
+                :output-to "server.js"
+                :output-dir "target/js/compiled/prod"
+                :target :nodejs
+                :optimizations :simple}}]}
+
+  :profiles {:dev {:dependencies [[figwheel-sidecar "0.5.14"]
+                                  [com.cemerick/piggieback "0.2.2"]]
+                   :source-paths ["src" "dev"]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})
