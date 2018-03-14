@@ -40,15 +40,15 @@ Shim requires from the host language to support:
 * def and defn
 * map, reduce
 
-A list of host language include https://github.com/chr15m/awesome-clojure-likes, we will probably support:
+Both JVM and NodeJS will be supported:
 
 * Clojure
 * Clojurescript
-* [Hy](http://docs.hylang.org/en/stable/)
 
 Possibly:
 
 * [Ferret](https://github.com/nakkaya/ferret)
+* [Hy](http://docs.hylang.org/en/stable/)
 
 
 Pipelines are used to construct workflow:
@@ -65,7 +65,20 @@ Pipelines are used to construct workflow:
 
 ```
 
+# Development
 
+Clojurescript:
+
+```bash
+$ npm install
+$ lein figwheel dev
+```
+
+Using a second window:
+
+```bash
+$ node target/js/compiled/shim.js
+```
 
 # Copyright and license
 

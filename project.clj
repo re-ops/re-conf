@@ -6,7 +6,18 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.clojure/clojurescript "1.10.126"]]
+
+                 ; common
+                 [org.clojure/core.async "0.4.474"]
+                 [fipp "0.6.12"]
+                 [eval-soup "1.4.1"]
+
+                 ; clojurescript
+                 [org.clojure/clojurescript "1.10.126"]
+                 [cljs-node-io "0.5.0"]
+                 [com.taoensso/timbre "4.10.0"]
+
+                 ]
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-figwheel "0.5.14"]]
@@ -20,7 +31,7 @@
               :source-paths ["src"]
               :figwheel true
               :compiler {
-                :main shim.core
+                :main shim.cljs.core
                 :asset-path "target/js/compiled/dev"
                 :output-to "target/js/compiled/shim.js"
                 :output-dir "target/js/compiled/dev"
@@ -35,7 +46,13 @@
                 :target :nodejs
                 :optimizations :simple}}]}
 
-  :profiles {:dev {:dependencies [[figwheel-sidecar "0.5.14"]
-                                  [com.cemerick/piggieback "0.2.2"]]
-                   :source-paths ["src" "dev"]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})
+  :profiles {
+      :dev {
+         :dependencies
+            [[figwheel-sidecar "0.5.14"] [com.cemerick/piggieback "0.2.2"]]
+          :source-paths ["src" "dev"]
+          :repl-options {
+            :init (do (fig-start))
+            :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
+           }
+       }})

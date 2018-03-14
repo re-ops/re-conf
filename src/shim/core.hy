@@ -12,8 +12,8 @@
   {:result :ok})
 
 (defn facts []
-  (subprocess.check-call "facter" "--json")
-  )
+  (subprocess.check-call "facter" "--json"))
+
 (defn install
   ([p] (install None p))
   ([res p]
