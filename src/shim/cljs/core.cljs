@@ -3,9 +3,12 @@
      [shim.cljs.shell :refer (sh)]
      [fipp.edn :refer (pprint)]
      [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
+     [cljs.core.async :as async :refer [<! go]]
      [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
+
+(def results (atom {}))
 
 (defn install
   ([p] (install nil p))
@@ -15,17 +18,17 @@
 (defn pretty [res s]
    (info res))
 
-(defn load-facts []
-   (let [{:keys [out]} (sh "facter" "--json")]
-     (js->clj out)))
+(defn into-json [s]
+  (.parse js/JSON s))
 
-(defn facts
-  "facter facts"
-   []
-   )
+(defn load-facts []
+  (go
+    (let [{:keys [out]} (<! (sh "facter" "--json"))
+          facts (js->clj (into-json out) :keywordize-keys true)]
+      (swap! results assoc :facter facts))))
 
 (comment
  (debug "bla")
- (pprint {:one 1})
+ (pprint (get-in @results [:facter :os :name]) )
  (load-facts)
  )
