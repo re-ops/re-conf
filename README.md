@@ -10,7 +10,7 @@ Shim aims to be:
 * REPL first workflow.
 * Debug and tracing built in.
 
-Non goals:
+And not to be:
 
 * Be Magical
 * A data format
@@ -71,13 +71,19 @@ Clojurescript:
 
 ```bash
 $ npm install
-$ lein figwheel dev
+$ lein repl
 ```
 
 Using a second window:
 
 ```bash
 $ node target/js/compiled/shim.js
+```
+
+From your VIM session:
+
+```bash
+:Piggieback (figwheel-sidecar.repl-api/repl-env)
 ```
 
 # Copyright and license
