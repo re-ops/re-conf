@@ -55,6 +55,7 @@
             [[figwheel-sidecar "0.5.14"] [com.cemerick/piggieback "0.2.2"]]
           :source-paths ["src" "dev"]
           :repl-options {
+            :port 38081
             :init (do (fig-start))
             :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
            }
