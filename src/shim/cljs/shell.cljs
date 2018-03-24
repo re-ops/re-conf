@@ -1,5 +1,5 @@
 (ns shim.cljs.shell
-  (:require-macros  [cljs.core.async.macros :refer  [go]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
     [cljs.nodejs :as nodejs]
     [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
@@ -17,9 +17,9 @@
     c))
 
 (defn exec
-  "executes cmd with args. returns a channel immediately which
-  will eventually receive a result vector of pairs [:kind data-str]
-  with the last pair being [:exit code]"
+  "Executes cmd with args. returns a channel immediately which
+    will eventually receive a result vector of pairs [:kind data-str]
+    with the last pair being [:exit code]"
   [cmd & args]
   (let [c (exec-chan cmd (clj->js args))]
     (go (loop [output (<! c) result []]
