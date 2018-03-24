@@ -20,17 +20,27 @@
   "Executes cmd with args. returns a channel immediately which
     will eventually receive a result vector of pairs [:kind data-str]
     with the last pair being [:exit code]"
-  [cmd & args]
+  [cmd args]
   (let [c (exec-chan cmd (clj->js args))]
-    (go (loop [output (<! c) result []]
-      (if (= :exit (first output))
-        (conj result output)
-        (recur (<! c) (conj result output)))))))
+    (go
+      (loop [output (<! c) result {}]
+        (if (= :exit (first output))
+          (update result :exit conj (second output))
+          (recur (<! c) (update result (first output) str (second output))))))))
 
-(defn sh [& args]
+(defn apply-options [as]
+  (let [[args options] (split-with string? as)]
+    (if ((apply hash-map options) :sudo)
+     (into ["/usr/bin/sudo"] args)
+      args
+      )))
+
+(defn sh [& as]
   (go
-    (into {} (<! (apply exec args)))))
+    (let [[cmd & args] (apply-options as)]
+      (into {}
+        (<! (exec cmd args))))))
 
 (comment
-  (take! (sh "ls" "-la" "/home/ronen") (fn [r] (println r)))
-  (take!  (fn [r] (println (keys r)))))
+  (take! (sh "apt" "update") (fn [r] (println r)))
+  )
