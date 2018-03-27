@@ -4,8 +4,7 @@
      [shim.cljs.shell :refer (sh)]
      [fipp.edn :refer (pprint)]
      [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
-     [cljs.core.async :as async :refer [<!]]
-     ))
+     [cljs.core.async :as async :refer [<!]]))
 
 (def facts (atom nil))
 
@@ -14,15 +13,18 @@
 
 (defn load-facts []
   (go
-    (let [{:keys [out]} (<! (sh "facter" "--json"))
+    (let [{:keys [out err exit]} (<! (sh "facter" "--json"))
           fs (js->clj (into-json out) :keywordize-keys true)]
-      (reset! facts fs))))
+      (if-not (= exit 0)
+        (error err)
+        (reset! facts fs)))))
 
 (defn os []
+  (when-not @facts
+    (throw (js/Error. "facts not initialized")))
   (keyword (get-in @facts [:os :name])))
 
 (comment
  (load-facts)
  (os)
- (keyword (get-in @facts [:os :name]))
  )
