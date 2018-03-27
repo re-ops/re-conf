@@ -20,6 +20,9 @@
                  ; string manipulation
                  [funcool/cuerdas "2.0.5"]
 
+                 ; error handling
+                 [org.clojars.akiel/async-error "0.2"]
+
                  ]
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
