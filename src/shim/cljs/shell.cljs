@@ -1,6 +1,7 @@
 (ns shim.cljs.shell
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+    [cuerdas.core :as str]
     [cljs.nodejs :as nodejs]
     [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
@@ -25,15 +26,16 @@
     (go
       (loop [output (<! c) result {}]
         (if (= :exit (first output))
-          (update result :exit conj (second output))
+          (assoc result :exit (str/parse-int (second output)))
           (recur (<! c) (update result (first output) str (second output))))))))
 
 (defn apply-options [as]
-  (let [[args options] (split-with string? as)]
-    (if ((apply hash-map options) :sudo)
-     (into ["/usr/bin/sudo"] args)
-      args
-      )))
+  (let [[args opts] (split-with string? as)
+         options (apply hash-map opts)]
+     (cond->> args
+       (options :sudo) (into ["/usr/bin/sudo"] args)
+       (options :dry) (or ["echo" "'dry run!'"])
+       )))
 
 (defn sh [& as]
   (go
@@ -42,5 +44,5 @@
         (<! (exec cmd args))))))
 
 (comment
-  (take! (sh "apt" "update") (fn [r] (println r)))
+  (take! (sh "apt" "update" :dry true) (fn [r] (println r)))
   )
