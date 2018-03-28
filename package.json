@@ -6,7 +6,9 @@
     "node": "8.x"
   },
   "main": "server.js",
-  "dependencies": {},
+  "dependencies": {
+    "request":"2.85.0"
+  },
   "devDependencies": {
     "source-map-support": "^0.4.15",
     "ws": "^0.8.1"
