@@ -16,6 +16,8 @@ And not to be:
 * A data format
 * A DSL
 
+[![Build Status](https://travis-ci.org/re-ops/re-conf.png)](https://travis-ci.org/re-ops/re-conf)
+
 # Resources
 
 Expect the following resources:
