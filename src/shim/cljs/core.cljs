@@ -2,6 +2,7 @@
   (:require
      [shim.cljs.facts :refer (load-facts os)]
      [shim.cljs.shell :refer (sh)]
+     [shim.cljs.download :as d]
      [fipp.edn :refer (pprint)]
      [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
      [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]
@@ -15,32 +16,27 @@
    (case (os)
      :Ubuntu  (sh "apt" "install" pkg "-y")
      :FreeBSD (sh "pkg" "install" "-y" pkg)
-     :default (throw  (js/Error. "No matching package provider found for ")) 
+     :default (throw  (js/Error. "No matching package provider found for "))
      ))
 
 (defn pkg-consumer [c]
   (go-loop []
-    #_(let [[res pkg resp] (<! c)]
-       (info "running!")
-       (take! (run-install pkg res) (fn [r] (>! resp r))))
+   (let [[res pkg resp] (<! c)]
+       (debug "running pkg install")
+       (take! (run-install pkg res) (fn [r] (go (>! resp r)))))
       (recur)))
 
 (defn install
   ([pkg] (install nil pkg))
   ([res pkg]
     (go
-      (let [resp (chan)]
-        (>! (@channels :pkg) [res pkg resp])
-        (info (<! resp)) 
-        ))
-   ))
+     (let [resp (chan)]
+       (>! (@channels :pkg) [res pkg resp])
+       (<! resp)))))
 
 (defn download
-  ([url target & options] (download nil url target))
-  ([res pkg]
-   (case (os)
-     )
-   ))
+  ([url dest] (download nil url target))
+  ([res url dest] (download nil url target)))
 
 (defn pretty [res s]
    (info res))
@@ -55,6 +51,6 @@
 
 (comment
   (setup)
-  (install "gt5")
+  (take! (install "gt5") (fn [v] (println v)))
   (os)
   )
