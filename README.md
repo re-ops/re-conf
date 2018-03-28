@@ -1,10 +1,10 @@
 # Intro
 
-Shim is a configuration management language which is subset of the Clojure language, it should be possible to run from any language that support the Clojure LISP dialect.
+Re-conf is a configuration management implemented in Clojurescript.
 
-Shim aims to be:
+Re-conf aims to be:
 
-* Fast
+* Fast(er) then existing solutions (Puppet, Chef etc..)
 * Portable (should run on any hardware and Unix like OS).
 * Simple to operate and deploy.
 * REPL first workflow.
@@ -18,7 +18,7 @@ And not to be:
 
 # Resources
 
-Shim will include the following resources:
+Expect the following resources:
 
 * File, create a file from a source.
 * Template for generating a file.
@@ -30,44 +30,11 @@ Shim will include the following resources:
 * Download for performing file download operations.
 * Checksum for verifying files.
 
-# Syntax
+# Platforms
 
-Shim requires from the host language to support:
-
-* ->
-* let
-* {} []
-* def and defn
-* map, reduce
-
-Both JVM and NodeJS will be supported:
-
-* Clojure
-* Clojurescript
-
-Possibly:
-
-* [Ferret](https://github.com/nakkaya/ferret)
-* [Hy](http://docs.hylang.org/en/stable/)
-
-
-Pipelines are used to construct workflow:
-
-```clojure
- (defn tmux
-   (-> (package "tmux") (template "~/.tmux.conf") (print "tmux installed"))
-
- (defn packer
-   (let [url "https://releases.hashicorp.com/packer/1.2.1/packer_1.2.1_linux_amd64.zip"
-         sum "dd90f00b69c4d8f88a8d657fff0bb909c77ebb998afd1f77da110bc05e2ed9c3"]
-    (-> (download url) (verify sum) (extract "/opt/packer")
-        (link "/opt/packer/bin/packer" "/bin/packer")  (print "packer ready"))
-
-```
+NodeJs will be the initial platform to be supported (JVM might be supported after).
 
 # Development
-
-Clojurescript:
 
 ```bash
 $ npm install

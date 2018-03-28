@@ -1,8 +1,8 @@
-(ns shim.cljs.core
+(ns re-conf.cljs.core
   (:require
-   [shim.cljs.facts :refer (load-facts os)]
-   [shim.cljs.shell :refer (sh)]
-   [shim.cljs.download :as d]
+   [re-conf.cljs.facts :refer (load-facts os)]
+   [re-conf.cljs.shell :refer (sh)]
+   [re-conf.cljs.download :as d]
    [fipp.edn :refer (pprint)]
    [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]

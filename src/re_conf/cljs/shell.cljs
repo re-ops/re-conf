@@ -1,4 +1,4 @@
-(ns shim.cljs.shell
+(ns re-conf.cljs.shell
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [cuerdas.core :as str]

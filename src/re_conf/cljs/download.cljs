@@ -1,4 +1,4 @@
-(ns shim.cljs.download
+(ns re-conf.cljs.download
   "nodejs native file download"
   (:require
    [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]

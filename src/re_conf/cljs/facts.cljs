@@ -1,7 +1,7 @@
-(ns shim.cljs.facts
+(ns re-conf.cljs.facts
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-   [shim.cljs.shell :refer (sh)]
+   [re-conf.cljs.shell :refer (sh)]
    [fipp.edn :refer (pprint)]
    [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
    [cljs.core.async :as async :refer [<!]]))

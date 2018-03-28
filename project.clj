@@ -1,6 +1,6 @@
-(defproject shim "0.1.0"
+(defproject re-conf "0.1.0"
   :description "Portable configuration management language"
-  :url "https://github.com/narkisr/shim"
+  :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
 
   :min-lein-version "2.7.1"
@@ -40,9 +40,9 @@
               :source-paths ["src"]
               :figwheel true
               :compiler {
-                :main shim.cljs.core
+                :main re-conf.cljs.core
                 :asset-path "target/js/compiled/dev"
-                :output-to "target/js/compiled/shim.js"
+                :output-to "target/js/compiled/re-conf.js"
                 :output-dir "target/js/compiled/dev"
                 :target :nodejs
                 :optimizations :none
@@ -50,7 +50,7 @@
              {:id "prod"
               :source-paths ["src"]
               :compiler {
-                :output-to "server.js"
+                :output-to "re-conf.js"
                 :output-dir "target/js/compiled/prod"
                 :target :nodejs
                 :optimizations :simple}}]}
