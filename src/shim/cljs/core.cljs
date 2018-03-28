@@ -21,7 +21,7 @@
 
 (defn pkg-consumer [c]
   (go-loop []
-   (let [[res pkg resp] (<! c)]
+    (let [[res pkg resp] (<! c)]
        (debug "running pkg install")
        (take! (run-install pkg res) (fn [r] (go (>! resp r)))))
       (recur)))
@@ -35,12 +35,12 @@
        (<! resp)))))
 
 (defn download
-  ([url dest] (download nil url target))
-  ([res url dest] (download nil url target)))
+  ([url dest] (download nil url dest))
+  ([res url dest]
+    (download nil url dest)))
 
 (defn pretty [res s]
    (info res))
-
 
 (defn setup
   "Setup our environment"
