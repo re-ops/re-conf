@@ -6,7 +6,6 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-
                  ; common
                  [org.clojure/core.async "0.4.474"]
                  [fipp "0.6.12"]
@@ -22,6 +21,9 @@
 
                  ; error handling
                  [org.clojars.akiel/async-error "0.2"]
+
+                 ; matching
+                 [org.clojure/core.match "0.3.0-alpha5"]
 
                  ]
 
