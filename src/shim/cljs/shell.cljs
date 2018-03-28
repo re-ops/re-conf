@@ -3,6 +3,7 @@
   (:require
     [cuerdas.core :as str]
     [cljs.nodejs :as nodejs]
+    [cljs.core.match :refer-macros  [match]]
     [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
 (def spawn (.-spawn (js/require "child_process")))
@@ -11,10 +12,11 @@
   "spawns a child process for cmd with args. routes stdout, stderr, and
   the exit code to a channel. returns the channel immediately."
   [cmd args]
-  (let [c (chan), p (spawn cmd args)]
+  (let [c (chan) p (spawn cmd args)]
     (.on (.-stdout p) "data"  #(put! c [:out  (str %)]))
     (.on (.-stderr p) "data"  #(put! c [:err  (str %)]))
-    (.on p            "close" #(put! c [:exit (str %)]))
+    (.on p "close" #(put! c [:exit (str %)]))
+    (.on p "error" (fn [e] (put! c [:error e])))
     c))
 
 (defn exec
@@ -25,9 +27,12 @@
   (let [c (exec-chan cmd (clj->js args))]
     (go
       (loop [output (<! c) result {}]
-        (if (= :exit (first output))
-          (assoc result :exit (str/parse-int (second output)))
-          (recur (<! c) (update result (first output) str (second output))))))))
+        (match output
+         [:exit code] (assoc result :exit (str/parse-int code))
+         [:error e] {:error e}
+         :else
+           (recur (<! c) (update result (first output) str (second output)))
+         )))))
 
 (defn apply-options [as]
   (let [[args opts] (split-with string? as)
@@ -40,9 +45,14 @@
 (defn sh [& as]
   (go
     (let [[cmd & args] (apply-options as)]
-      (into {}
-        (<! (exec cmd args))))))
+      (try
+        (let [r (exec cmd args)]
+          (into {} (<! r)))
+        (catch js/Error e
+          {:error e}
+          ))
+      )))
 
 (comment
-  (take! (sh "apt" "update" :dry true) (fn [r] (println r)))
+  (take! (sh "apt" "update") (fn [r] (println r)))
   )
