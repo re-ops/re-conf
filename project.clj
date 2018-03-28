@@ -1,4 +1,4 @@
-(defproject shim "0.0.1"
+(defproject shim "0.1.0"
   :description "Portable configuration management language"
   :url "https://github.com/narkisr/shim"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
@@ -55,7 +55,7 @@
                 :target :nodejs
                 :optimizations :simple}}]}
 
-  :profiles {
+    :profiles {
       :dev {
          :dependencies
             [[figwheel-sidecar "0.5.14"] [com.cemerick/piggieback "0.2.2"]]
@@ -65,4 +65,12 @@
             :init (do (fig-start))
             :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
            }
-       }})
+       }
+    }
+
+    :aliases {
+      "travis" [
+         "do" "clean," "cljfmt" "check," "cljsbuild" "once" "prod"
+       ]
+    }
+)
