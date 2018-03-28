@@ -1,10 +1,10 @@
 (ns shim.cljs.facts
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-     [shim.cljs.shell :refer (sh)]
-     [fipp.edn :refer (pprint)]
-     [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
-     [cljs.core.async :as async :refer [<!]]))
+   [shim.cljs.shell :refer (sh)]
+   [fipp.edn :refer (pprint)]
+   [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
+   [cljs.core.async :as async :refer [<!]]))
 
 (def facts (atom nil))
 
@@ -25,6 +25,5 @@
   (keyword (get-in @facts [:os :name])))
 
 (comment
- (load-facts)
- (os)
- )
+  (load-facts)
+  (os))

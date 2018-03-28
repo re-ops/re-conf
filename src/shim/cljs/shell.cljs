@@ -1,10 +1,10 @@
 (ns shim.cljs.shell
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-    [cuerdas.core :as str]
-    [cljs.nodejs :as nodejs]
-    [cljs.core.match :refer-macros  [match]]
-    [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
+   [cuerdas.core :as str]
+   [cljs.nodejs :as nodejs]
+   [cljs.core.match :refer-macros  [match]]
+   [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
 (def spawn (.-spawn (js/require "child_process")))
 
@@ -28,19 +28,17 @@
     (go
       (loop [output (<! c) result {}]
         (match output
-         [:exit code] (assoc result :exit (str/parse-int code))
-         [:error e] {:error e}
-         :else
-           (recur (<! c) (update result (first output) str (second output)))
-         )))))
+          [:exit code] (assoc result :exit (str/parse-int code))
+          [:error e] {:error e}
+          :else
+          (recur (<! c) (update result (first output) str (second output))))))))
 
 (defn apply-options [as]
   (let [[args opts] (split-with string? as)
-         options (apply hash-map opts)]
-     (cond->> args
-       (options :sudo) (into ["/usr/bin/sudo"] args)
-       (options :dry) (or ["echo" "'dry run!'"])
-       )))
+        options (apply hash-map opts)]
+    (cond->> args
+      (options :sudo) (into ["/usr/bin/sudo"] args)
+      (options :dry) (or ["echo" "'dry run!'"]))))
 
 (defn sh [& as]
   (go
@@ -49,10 +47,7 @@
         (let [r (exec cmd args)]
           (into {} (<! r)))
         (catch js/Error e
-          {:error e}
-          ))
-      )))
+          {:error e})))))
 
 (comment
-  (take! (sh "apt" "update") (fn [r] (println r)))
-  )
+  (take! (sh "apt" "update") (fn [r] (println r))))
