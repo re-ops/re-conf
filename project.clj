@@ -66,11 +66,25 @@
             :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
            }
        }
+      :codox {
+       :dependencies [[org.clojure/tools.reader "1.1.0"]
+                      [codox-theme-rdash "0.1.2"]]
+       :plugins [[lein-codox "0.10.3"]]
+       :codox {:project {:name "re-mote"}
+               :themes [:rdash]
+               :language :clojurescript
+               :source-paths ["src"]
+               :source-uri "https://github.com/re-ops/re-mote/blob/master/{filepath}#L{line}"
+       }
+     }
     }
 
     :aliases {
-      "travis" [
+       "travis" [
          "do" "clean," "cljfmt" "check," "cljsbuild" "once" "prod"
        ]
+      "docs" [
+        "with-profile" "codox" "do" "codox"
+      ]
     }
 )
