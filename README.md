@@ -12,7 +12,7 @@ Re-conf aims to be:
 
 And not to be:
 
-* Be Magical
+* Magical
 * A data format
 * A DSL
 
