@@ -18,8 +18,7 @@
     (.on getter "error" (fn [e] (error e) (go (>! c {:error e}))))
     (.on getter "response" (fn [resp] (go (>! c {:ok (.-statusCode resp)}))))
     (.pipe getter file)
-    c 
-    ))
+    c))
 
 (defn checkum
   [f k]
@@ -29,8 +28,7 @@
     (.on stream "data" (fn [data] (.update shasum data)))
     (.on stream "error" (fn [e] (go (>! c {:error e}))))
     (.on stream "end" (fn [] (go (>! c {:ok (.digest shasum "hex")}))))
-    c 
-    ))
+    c))
 
 (comment
   (let [c (chan)]
