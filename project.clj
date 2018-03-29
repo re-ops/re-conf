@@ -23,13 +23,23 @@
                  [org.clojars.akiel/async-error "0.2"]
 
                  ; matching
-                 [org.clojure/core.match "0.3.0-alpha5"]
+                 [org.clojure/core.match "0.3.0-alpha5"]]
+  :npm {
+        :dependencies [
+          ["request" "2.85.0"]
+        ]
 
-                 ]
+        :devDependencies[
+          ["source-map-support" "^0.4.15"]
+          ["ws" "^0.8.1"]
+        ]
+  }
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-figwheel "0.5.14"]
-            [lein-cljfmt "0.5.7"]]
+            [lein-cljfmt "0.5.7"]
+            [lein-npm "0.6.2"]]
+
 
   :source-paths ["src"]
 
