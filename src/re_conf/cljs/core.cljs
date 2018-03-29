@@ -34,9 +34,16 @@
        (<! resp)))))
 
 (defn download
-  ([url dest] (download nil url dest))
+  ([url dest]
+   (download nil url dest))
   ([res url dest]
-   (download nil url dest)))
+   (d/download url dest)))
+
+(defn checkum
+  ([file k]
+   (checkum nil file k))
+  ([res file k]
+   (d/checkum file k)))
 
 (defn pretty [res s]
   (info res))
@@ -49,5 +56,6 @@
 
 (comment
   (setup)
-  (take! (install "gt5") (fn [v] (println v)))
-  (os))
+  (take! (install "gt5") (fn [v] (println v))) 
+  (os) 
+  )

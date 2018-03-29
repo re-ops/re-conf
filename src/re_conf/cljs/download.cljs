@@ -11,20 +11,26 @@
 
 (defn download
   "download a file"
-  [url dest c]
+  [url dest]
   (let [file (.createWriteStream fs dest)
-        getter (.get request url)]
+        getter (.get request url)
+        c (chan)]
     (.on getter "error" (fn [e] (error e) (go (>! c {:error e}))))
     (.on getter "response" (fn [resp] (go (>! c {:ok (.-statusCode resp)}))))
-    (.pipe getter file)))
+    (.pipe getter file)
+    c 
+    ))
 
 (defn checkum
-  [f k c]
+  [f k]
   (let [shasum (.createHash crypto (name k))
-        stream (.ReadStream fs f)]
+        stream (.ReadStream fs f)
+        c (chan)]
     (.on stream "data" (fn [data] (.update shasum data)))
     (.on stream "error" (fn [e] (go (>! c {:error e}))))
-    (.on stream "end" (fn [] (go (>! c {:ok (.digest shasum "hex")}))))))
+    (.on stream "end" (fn [] (go (>! c {:ok (.digest shasum "hex")}))))
+    c 
+    ))
 
 (comment
   (let [c (chan)]
