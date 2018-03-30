@@ -12,7 +12,7 @@
                  [eval-soup "1.4.1"]
 
                  ; clojurescript
-                 [org.clojure/clojurescript "1.10.126"]
+                 [org.clojure/clojurescript "1.10.238"]
                  [cljs-node-io "0.5.0"]
                  [com.taoensso/timbre "4.10.0"]
 
@@ -32,6 +32,7 @@
         :devDependencies[
           ["source-map-support" "^0.4.15"]
           ["ws" "^0.8.1"]
+          ["winston" "3.0.0-rc3"]
         ]
   }
 
