@@ -2,9 +2,9 @@
   (:require
    [re-conf.cljs.facts :refer (load-facts os)]
    [re-conf.cljs.shell :refer (sh)]
+   [re-conf.cljs.log :refer (info debug)]
    [re-conf.cljs.download :as d]
    [fipp.edn :refer (pprint)]
-   [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]
    [cljs.nodejs :as nodejs]))
 
@@ -21,12 +21,13 @@
 (defn pkg-consumer [c]
   (go-loop []
     (let [[res pkg resp] (<! c)]
-      (debug "running pkg install")
+      (debug "running pkg install" ::log)
       (take! (run-install pkg res) (fn [r] (go (>! resp r)))))
     (recur)))
 
 (defn install
-  ([pkg] (install nil pkg))
+  ([pkg]
+   (install nil pkg))
   ([res pkg]
    (go
      (let [resp (chan)]
@@ -56,5 +57,5 @@
 
 (comment
   (setup)
-  (take! (install "gt5") (fn [v] (println v)))
+  (take! (checkum "/tmp/.X0-lock" :md5) (fn [v] (info v ::log)))
   (os))

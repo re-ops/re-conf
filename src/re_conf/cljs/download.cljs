@@ -1,7 +1,7 @@
 (ns re-conf.cljs.download
   "nodejs native file download"
   (:require
-   [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
+   [re-conf.cljs.log :refer (info)]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]
    [cljs.nodejs :as nodejs]))
 
@@ -31,10 +31,4 @@
     c))
 
 (comment
-  (let [c (chan)]
-    (download "https://releases.hashicorp.com/packer/1.2.2/packer_1.2.2_linux_386.zip" "/tmp/packer-2.zip" c)
-    (take! c (fn [r] (println r))))
-
-  (let [c (chan)]
-    (checkum "/tmp/acker-2.zip" :sha512 c)
-    (take! c (fn [r] (println r)))))
+  (take! (checkum "/tmp/lein-standalone383452244645207519.jar" :sha512) (fn [r] (info r ::log))))

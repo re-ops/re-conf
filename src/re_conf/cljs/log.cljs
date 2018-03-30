@@ -5,17 +5,33 @@
 
 (def settings
   (let [f (clj->js {"filename" "re-conf.log"})]
-    {:level "info"
+    {:level "debug"
+     :format (winston.format.combine (winston.format.timestamp) (winston.format.json))
      :transports [(winston.transports.Console.)
                   (winston.transports.File. f)]}))
 
 (def logger (.createLogger winston (clj->js settings)))
 
+(defn- log
+  [m n level]
+  (.log logger (clj->js {:level level :message m :ns (str n)})))
+
 (defn info
-  "Using winston logging info"
-  [m]
-  (.info logger m))
+  "Using Winston logging info"
+  [m n]
+  (log m n "info"))
+
+(defn debug
+  "Using Winston logging info"
+  [m n]
+  (log m n "debug"))
+
+(defn trace
+  "Using Winston logging info"
+  [m n]
+  (log m n "trace"))
 
 (comment
-  (info "hello"))
+  (info "hello" ::log)
+  (debug "bla" ::log))
 
