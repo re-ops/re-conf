@@ -2,8 +2,8 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [re-conf.cljs.shell :refer (sh)]
+   [re-conf.cljs.log :refer (error)]
    [fipp.edn :refer (pprint)]
-   [taoensso.timbre :as timbre :refer-macros  [trace debug info error]]
    [cljs.core.async :as async :refer [<!]]))
 
 (def facts (atom nil))
@@ -16,7 +16,7 @@
     (let [{:keys [out err exit]} (<! (sh "facter" "--json"))
           fs (js->clj (into-json out) :keywordize-keys true)]
       (if-not (= exit 0)
-        (error err)
+        (error err ::log)
         (reset! facts fs)))))
 
 (defn os []

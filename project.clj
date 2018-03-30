@@ -14,7 +14,6 @@
                  ; clojurescript
                  [org.clojure/clojurescript "1.10.238"]
                  [cljs-node-io "0.5.0"]
-                 [com.taoensso/timbre "4.10.0"]
 
                  ; string manipulation
                  [funcool/cuerdas "2.0.5"]

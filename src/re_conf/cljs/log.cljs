@@ -16,6 +16,11 @@
   [m n level]
   (.log logger (clj->js {:level level :message m :ns (str n)})))
 
+(defn error
+  "Using Winston logging info"
+  [m n]
+  (log m n "error"))
+
 (defn info
   "Using Winston logging info"
   [m n]
@@ -25,11 +30,6 @@
   "Using Winston logging info"
   [m n]
   (log m n "debug"))
-
-(defn trace
-  "Using Winston logging info"
-  [m n]
-  (log m n "trace"))
 
 (comment
   (info "hello" ::log)
