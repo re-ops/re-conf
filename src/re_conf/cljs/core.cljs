@@ -57,5 +57,4 @@
 (comment
   (setup)
   (take! (install "gt5") (fn [v] (println v)))
-  (os)
-  )
+  (os))
