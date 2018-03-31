@@ -16,8 +16,8 @@
     (let [{:keys [out err exit]} (<! (sh "facter" "--json"))
           fs (js->clj (into-json out) :keywordize-keys true)]
       (if-not (= exit 0)
-        (error err ::log)
-        (reset! facts fs)))))
+        {:error err}
+        {:ok (reset! facts fs)}))))
 
 (defn os []
   (when-not @facts

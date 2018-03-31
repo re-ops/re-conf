@@ -5,7 +5,7 @@
    [re-conf.cljs.log :refer (info debug)]
    [re-conf.cljs.download :as d]
    [fipp.edn :refer (pprint)]
-   [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]
+   [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -22,7 +22,7 @@
   (go-loop []
     (let [[res pkg resp] (<! c)]
       (debug "running pkg install" ::log)
-      (take! (run-install pkg res) (fn [r] (go (>! resp r)))))
+      (take! (run-install pkg res) (fn [r] (put! resp r))))
     (recur)))
 
 (defn install
@@ -47,15 +47,25 @@
    (d/checkum file k)))
 
 (defn pretty [res s]
-  (info res))
+  (info res ::log))
 
 (defn setup
   "Setup our environment"
   []
-  (load-facts)
-  (pkg-consumer (@channels :pkg)))
+  (go
+    (<! (load-facts))
+    (println "facts loaded")
+    (pkg-consumer (@channels :pkg))))
+
+(defn -main [& args]
+  (take! (setup)
+         (fn [r]
+           (println "started re-conf")
+           (println (os))
+           (take! (checkum (first args) :md5) (fn [v] (info v ::log))))))
+
+(set! *main-cli-fn* -main)
 
 (comment
   (setup)
-  (take! (checkum "/tmp/.X0-lock" :md5) (fn [v] (info v ::log)))
   (os))

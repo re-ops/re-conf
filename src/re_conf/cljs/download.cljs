@@ -1,8 +1,8 @@
 (ns re-conf.cljs.download
   "nodejs native file download"
   (:require
-   [re-conf.cljs.log :refer (info)]
-   [cljs.core.async :as async :refer [<! >! chan go-loop go take!]]
+   [re-conf.cljs.log :refer (info error)]
+   [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
    [cljs.nodejs :as nodejs]))
 
 (def fs (js/require "fs"))
@@ -15,8 +15,8 @@
   (let [file (.createWriteStream fs dest)
         getter (.get request url)
         c (chan)]
-    (.on getter "error" (fn [e] (error e) (go (>! c {:error e}))))
-    (.on getter "response" (fn [resp] (go (>! c {:ok (.-statusCode resp)}))))
+    (.on getter "error" (fn [e] (error e ::log) (put! c {:error e})))
+    (.on getter "response" (fn [resp] (put! c {:ok (.-statusCode resp)})))
     (.pipe getter file)
     c))
 
@@ -26,8 +26,8 @@
         stream (.ReadStream fs f)
         c (chan)]
     (.on stream "data" (fn [data] (.update shasum data)))
-    (.on stream "error" (fn [e] (go (>! c {:error e}))))
-    (.on stream "end" (fn [] (go (>! c {:ok (.digest shasum "hex")}))))
+    (.on stream "error" (fn [e] (put! c {:error e})))
+    (.on stream "end" (fn [] (put! c {:ok (.digest shasum "hex")})))
     c))
 
 (comment
