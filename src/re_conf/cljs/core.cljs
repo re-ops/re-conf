@@ -2,7 +2,7 @@
   (:require
    [re-conf.cljs.facts :refer (load-facts os)]
    [re-conf.cljs.shell :refer (sh)]
-   [re-conf.cljs.log :refer (info debug)]
+   [re-conf.cljs.log :refer (info debug error)]
    [re-conf.cljs.download :as d]
    [fipp.edn :refer (pprint)]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
@@ -27,28 +27,50 @@
 
 (defn install
   [pkg]
-   (go
-     (let [resp (chan)]
-       (>! (@channels :pkg) [res pkg resp])
-       (<! resp))))
+  (go
+    (let [resp (chan)]
+      (>! (@channels :pkg) [res pkg resp])
+      (<! resp))))
 
 (defn download
   "Download file resource"
   [url dest]
-   (d/download url dest))
+  (d/download url dest))
 
-(defn checkum
+(defn run [c next]
+  (take! c
+         (fn [r]
+           (info r ::log)
+           (if (:ok r)
+             (next)
+             (error (:error r) ::log)))))
+
+(defn checksum
   "Checksum file resource"
-  [file k]
+  ([file k]
    (d/checkum file k))
+  ([c file k]
+   (run c (fn [] (checkum file k)))))
+
+(defn pretty
+  "Print result"
+  ([]
+   (info "ok" ::log))
+  ([c]
+   (run c (fn [] (pretty)))))
+
+(defn- channel?
+  "check is x is a channel"
+  [x]
+  (= (type x)  cljs.core.async.impl.channels/ManyToManyChannel))
 
 (defn exec
   "Shell execution resource"
-  [& args]
-   (apply sh args))
-
-(defn pretty [res s]
-  (info res ::log))
+  [a & args]
+  (info a ::log)
+  (if (channel? a)
+    (run a (fn [] (apply sh args)))
+    (apply sh (conj args a))))
 
 (defn setup
   "Setup our environment"
@@ -57,15 +79,6 @@
     (<! (load-facts))
     (info "Facts loaded")
     (pkg-consumer (@channels :pkg))))
-
-(defn thread [r f]
-
-  )
-(defmacro -!>
-  [& forms]
-  `(let [r# ~(first forms)]
-     
-    ))
 
 (defn -main [& args]
   (take! (setup)
@@ -77,5 +90,6 @@
 (set! *main-cli-fn* -main)
 
 (comment
+  (-> (checksum "/home/ronen/bin/au-mirror" :md5) (exec "ls" "/tmp"))
   (setup)
   (os))

@@ -1,14 +1,8 @@
 (ns re-conf.cljs.basic
-  (:require [re-conf.cljs.core :refer (install pretty -!>)]))
+  (:require [re-conf.cljs.core :refer (install checksum -!>)]))
 
-(defn install-tmux []
-  (-!> (install "tmux") (pretty "done installing tmux")))
-
-(let [r (install "tmux")]
-  (if-not (error? r)
-    (pretty "done installing tmux")
-    )
-  )
+(defn sanity []
+  (-!> (checksum "/tmp/form-init2576307926037317786.clj" :md5)))
 
 (comment
-  (install-tmux))
+  (sanity))
