@@ -26,25 +26,26 @@
     (recur)))
 
 (defn install
-  ([pkg]
-   (install nil pkg))
-  ([res pkg]
+  [pkg]
    (go
      (let [resp (chan)]
        (>! (@channels :pkg) [res pkg resp])
-       (<! resp)))))
+       (<! resp))))
 
 (defn download
-  ([url dest]
-   (download nil url dest))
-  ([res url dest]
-   (d/download url dest)))
+  "Download file resource"
+  [url dest]
+   (d/download url dest))
 
 (defn checkum
-  ([file k]
-   (checkum nil file k))
-  ([res file k]
-   (d/checkum file k)))
+  "Checksum file resource"
+  [file k]
+   (d/checkum file k))
+
+(defn exec
+  "Shell execution resource"
+  [& args]
+   (apply sh args))
 
 (defn pretty [res s]
   (info res ::log))
@@ -54,13 +55,22 @@
   []
   (go
     (<! (load-facts))
-    (println "facts loaded")
+    (info "Facts loaded")
     (pkg-consumer (@channels :pkg))))
+
+(defn thread [r f]
+
+  )
+(defmacro -!>
+  [& forms]
+  `(let [r# ~(first forms)]
+     
+    ))
 
 (defn -main [& args]
   (take! (setup)
          (fn [r]
-           (println "started re-conf")
+           (info "Started re-conf")
            (println (os))
            (take! (checkum (first args) :md5) (fn [v] (info v ::log))))))
 
