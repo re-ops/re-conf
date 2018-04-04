@@ -40,7 +40,6 @@
 (defn run [c next]
   (go
     (let [r (<! c)]
-      (info r ::run)
       (if (:ok r)
         (<! (next))
         r))))
@@ -59,7 +58,7 @@
          (fn [r]
            (match r
              {:error e} (error e ::summary-fail)
-             {:ok o} (info "Pipeline done" ::summary-ok)
+             {:ok o} (info "Pipeline ok" ::summary-ok)
              :else (error r ::summary-error)))))
 
 (defn- channel?
@@ -92,6 +91,10 @@
 (set! *main-cli-fn* -main)
 
 (comment
-  (-> (checksum "/home/ronen/.ackrc" :md5) (exec "touch" "/tmp/bla") (summary))
+  (->
+   (checksum "/home/ronen/.ackrc" :md5)
+   (exec "touch" "/tmp/bla")
+   (checksum "/home/ronen/.bash_history" :md5)
+   (summary))
   (setup)
   (os))
