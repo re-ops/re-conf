@@ -39,7 +39,12 @@ NodeJs will be the initial platform to be supported (JVM might be supported afte
 # Development
 
 ```bash
-$ npm install
+$ lein npm install
+```
+
+## VIM
+
+```bash
 $ lein repl
 ```
 
@@ -49,7 +54,7 @@ Using a second window:
 $ node target/js/compiled/shim.js
 ```
 
-From your VIM session:
+In the VIM session:
 
 ```bash
 :Piggieback (figwheel-sidecar.repl-api/repl-env)

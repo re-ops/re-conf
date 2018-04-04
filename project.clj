@@ -32,6 +32,7 @@
           ["source-map-support" "^0.4.15"]
           ["ws" "^0.8.1"]
           ["winston" "3.0.0-rc3"]
+          ["systeminformation" "3.37.9"]
         ]
   }
 
@@ -91,7 +92,7 @@
 
     :aliases {
        "travis" [
-         "do" "clean," "cljfmt" "check," "cljsbuild" "once" "prod"
+         "do" "clean," "cljfmt" "check," "npm" "install," "cljsbuild" "once" "prod"
        ]
       "docs" [
         "with-profile" "codox" "do" "codox"
