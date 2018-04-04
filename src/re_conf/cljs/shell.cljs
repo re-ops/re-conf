@@ -1,6 +1,7 @@
 (ns re-conf.cljs.shell
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [re-conf.cljs.log :refer (info debug error)]
    [cuerdas.core :as str]
    [cljs.nodejs :as nodejs]
    [cljs.core.match :refer-macros  [match]]
@@ -44,10 +45,12 @@
   (go
     (let [[cmd & args] (apply-options as)]
       (try
-        (let [r (exec cmd args)]
-          (into {} (<! r)))
+        (let [{:keys [exit] :as r} (into {} (<! (exec cmd args)))]
+          (if (= 0 exit)
+            {:ok r}
+            {:error r}))
         (catch js/Error e
           {:error e})))))
 
 (comment
-  (take! (sh "apt" "update") (fn [r] (println r))))
+  (take! (sh "apt" "update") (fn [r] (info r ::take))))
