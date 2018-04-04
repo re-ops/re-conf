@@ -1,5 +1,8 @@
 (ns re-conf.cljs.log
-  "node logging")
+  "Logging facade"
+  (:require
+   [cljs.core.async :as async :refer [take!]]
+   [re-conf.cljs.common :refer (channel?)]))
 
 (def winston (js/require "winston"))
 
@@ -12,22 +15,26 @@
 
 (def logger (.createLogger winston (clj->js settings)))
 
-(defn- log
+(defn- winston-log
+  "Using Winston to log"
   [m n level]
   (.log logger (clj->js {:level level :message m :ns (str n)})))
 
+(defn- log
+  [m n level]
+  (if (channel? m)
+    (take! m (fn [o] (winston-log o n level)))
+    (winston-log m n level)))
+
 (defn error
-  "Using Winston logging info"
   [m n]
   (log m n "error"))
 
 (defn info
-  "Using Winston logging info"
   [m n]
   (log m n "info"))
 
 (defn debug
-  "Using Winston logging info"
   [m n]
   (log m n "debug"))
 

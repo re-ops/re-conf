@@ -1,29 +1,22 @@
 (ns re-conf.cljs.facts
-  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-   [re-conf.cljs.shell :refer (sh)]
-   [re-conf.cljs.log :refer (error)]
-   [fipp.edn :refer (pprint)]
-   [cljs.core.async :as async :refer [<!]]))
+   [re-conf.cljs.log :refer (error info)]
+   [cljs.core.async :as async :refer [<! put! chan]]))
 
-(def facts (atom nil))
+(def si (js/require "systeminformation"))
 
-(defn into-json [s]
-  (.parse js/JSON s))
+(defn get- [c k]
+  (fn [d]
+    (let [r (js->clj d :keywordize-keys true)]
+      (put! c (if k (k r) r)))))
 
-(defn load-facts []
-  (go
-    (let [{:keys [out err exit]} (<! (sh "facter" "--json"))
-          fs (js->clj (into-json out) :keywordize-keys true)]
-      (if-not (= exit 0)
-        {:error err}
-        {:ok (reset! facts fs)}))))
-
-(defn os []
-  (when-not @facts
-    (throw (js/Error. "facts not initialized")))
-  (keyword (get-in @facts [:os :name])))
+(defn os
+  ([]
+   (os nil))
+  ([k]
+   (let [c (chan)]
+     (.osInfo si (get- c k))
+     c)))
 
 (comment
-  (load-facts)
-  (os))
+  (info (os) ::log))

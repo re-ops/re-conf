@@ -1,9 +1,10 @@
 (ns re-conf.cljs.core
   (:require
-   [re-conf.cljs.facts :refer (load-facts os)]
+   [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.log :refer (info debug error)]
    [re-conf.cljs.download :as d]
+   [re-conf.cljs.common :refer (channel?)]
    [cljs.core.match :refer-macros  [match]]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
    [cljs.nodejs :as nodejs]))
@@ -14,8 +15,8 @@
 
 (defn- run-install [res pkg]
   (case (os)
-    :Ubuntu  (sh "apt" "install" pkg "-y")
-    :FreeBSD (sh "pkg" "install" "-y" pkg)
+    "linux" (sh "apt" "install" pkg "-y")
+    "freebsd" (sh "pkg" "install" "-y" pkg)
     :default (throw  (js/Error. "No matching package provider found for "))))
 
 (defn pkg-consumer [c]
@@ -61,11 +62,6 @@
              {:ok o} (info "Pipeline ok" ::summary-ok)
              :else (error r ::summary-error)))))
 
-(defn- channel?
-  "check is x is a channel"
-  [x]
-  (= (type x) cljs.core.async.impl.channels/ManyToManyChannel))
-
 (defn exec
   "Shell execution resource"
   [a & args]
@@ -77,8 +73,6 @@
   "Setup our environment"
   []
   (go
-    (<! (load-facts))
-    (info "Facts loaded" ::setup)
     (pkg-consumer (@channels :pkg))))
 
 (defn -main [& args]
