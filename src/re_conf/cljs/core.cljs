@@ -54,13 +54,15 @@
 
 (defn summary
   "Print result"
-  [c]
-  (take! c
-         (fn [r]
-           (match r
-             {:error e} (error e ::summary-fail)
-             {:ok o} (info "Pipeline ok" ::summary-ok)
-             :else (error r ::summary-error)))))
+  ([c]
+   (summary c "Pipeline ok"))
+  ([c m]
+   (take! c
+          (fn [r]
+            (match r
+              {:error e} (error e ::summary-fail)
+              {:ok o} (info m ::summary-ok)
+              :else (error r ::summary-error))))))
 
 (defn exec
   "Shell execution resource"
@@ -79,8 +81,7 @@
   (take! (setup)
          (fn [r]
            (info "Started re-conf" ::main)
-           (println (os))
-           (take! (checkum (first args) :md5) (fn [v] (info v ::log))))))
+           (-> (checksum "/home/ronen/.ackrc" :md5) (exec "touch" "/tmp/bla") (summary "checking done!")))))
 
 (set! *main-cli-fn* -main)
 
