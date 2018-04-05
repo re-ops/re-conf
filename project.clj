@@ -8,8 +8,6 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  ; common
                  [org.clojure/core.async "0.4.474"]
-                 [fipp "0.6.12"]
-                 [eval-soup "1.4.1"]
 
                  ; clojurescript
                  [org.clojure/clojurescript "1.10.238"]
@@ -18,11 +16,12 @@
                  ; string manipulation
                  [funcool/cuerdas "2.0.5"]
 
-                 ; error handling
-                 [org.clojars.akiel/async-error "0.2"]
-
                  ; matching
-                 [org.clojure/core.match "0.3.0-alpha5"]]
+                 [org.clojure/core.match "0.3.0-alpha5"]
+
+                 ; templates
+                 [cljstache "2.0.1"]
+                 ]
   :npm {
         :dependencies [
           ["request" "2.85.0"]
