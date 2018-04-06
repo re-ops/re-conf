@@ -2,6 +2,7 @@
   (:require
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]
+   [re-conf.cljs.template :as t]
    [re-conf.cljs.log :refer (info debug error)]
    [re-conf.cljs.download :as d]
    [re-conf.cljs.common :refer (channel?)]
@@ -11,33 +12,6 @@
 
 (nodejs/enable-util-print!)
 
-(def channels (atom {:pkg (chan 10)}))
-
-(defn- run-install [res pkg]
-  (case (os)
-    "linux" (sh "apt" "install" pkg "-y")
-    "freebsd" (sh "pkg" "install" "-y" pkg)
-    :default (throw  (js/Error. "No matching package provider found for "))))
-
-(defn pkg-consumer [c]
-  (go-loop []
-    (let [[res pkg resp] (<! c)]
-      (debug "running pkg install" ::log)
-      (take! (run-install pkg res) (fn [r] (put! resp r))))
-    (recur)))
-
-(defn install
-  [pkg]
-  (go
-    (let [resp (chan)]
-      (>! (@channels :pkg) [res pkg resp])
-      (<! resp))))
-
-(defn download
-  "Download file resource"
-  [url dest]
-  (d/download url dest))
-
 (defn run [c next]
   (go
     (let [r (<! c)]
@@ -45,12 +19,53 @@
         (<! (next))
         r))))
 
+(def channels (atom {:pkg (chan 10)}))
+
+(defn- run-install [pkg]
+  (case (os)
+    "linux" (sh "apt" "install" pkg "-y")
+    "freebsd" (sh "pkg" "install" "-y" pkg)
+    :default (throw  (js/Error. "No matching package provider found for "))))
+
+(defn pkg-consumer [c]
+  (go-loop []
+    (let [[pkg resp] (<! c)]
+      (debug "running pkg install" ::log)
+      (take! (run-install pkg) (fn [r] (put! resp r))))
+    (recur)))
+
 (defn checksum
-  "Checksum file resource"
-  ([file k]
-   (d/checkum file k))
-  ([c file k]
-   (run c (fn [] (d/checkum file k)))))
+  "Checksum a file and check expected value"
+  ([file e k]
+   (d/checkum file e k))
+  ([c file e k]
+   (run c (fn [] (d/checkum file e k)))))
+
+(defn download
+  "Download file resource"
+  [url dest]
+  (d/download url dest))
+
+(defn exec
+  "Shell execution resource"
+  [a & args]
+  (if (channel? a)
+    (run a (fn [] (apply sh args)))
+    (apply sh (conj args a))))
+
+(defn install
+  [pkg]
+  (go
+    (let [resp (chan)]
+      (>! (@channels :pkg) [pkg resp])
+      (<! resp))))
+
+(defn template
+  "Create a file from a template with args"
+  ([args tmpl dest]
+   (t/template args tmpl dest))
+  ([c args tmpl dest]
+   (run c (fn [] (t/template args tmpl dest)))))
 
 (defn summary
   "Print result"
@@ -64,13 +79,6 @@
               {:ok o} (info m ::summary-ok)
               :else (error r ::summary-error))))))
 
-(defn exec
-  "Shell execution resource"
-  [a & args]
-  (if (channel? a)
-    (run a (fn [] (apply sh args)))
-    (apply sh (conj args a))))
-
 (defn setup
   "Setup our environment"
   []
@@ -80,16 +88,15 @@
 (defn -main [& args]
   (take! (setup)
          (fn [r]
-           (info "Started re-conf" ::main)
-           (-> (checksum "/home/ronen/.ackrc" :md5) (exec "touch" "/tmp/bla") (summary "checking done!")))))
+           (info "Started re-conf" ::main))))
 
 (set! *main-cli-fn* -main)
 
 (comment
   (->
-   (checksum "/home/ronen/.ackrc" :md5)
+   (checksum "/home/ronen/.ackrc" "910d37b2542915dec2f2cb7a0da34f9b" :md5)
    (exec "touch" "/tmp/bla")
-   (checksum "/home/ronen/.bash_history" :md5)
+   (template {:keys {:key "abcd" :user "foo@bla"}} "resources/authorized_keys.mustache" "/tmp/keys")
    (summary))
   (setup)
   (os))

@@ -20,15 +20,22 @@
     (.pipe getter file)
     c))
 
+(defn verify
+  "Verify checksum matching"
+  [sum expected]
+  (if (= sum expected)
+    {:ok {:message "checksum matches" :sum sum :expected expected}}
+    {:error {:message "checksum does not match!" :sum sum :expected expected}}))
+
 (defn checkum
-  [f k]
+  [f expected k]
   (let [shasum (.createHash crypto (name k))
         stream (.ReadStream fs f)
         c (chan)]
     (.on stream "data" (fn [data] (.update shasum data)))
     (.on stream "error" (fn [e] (put! c {:error e})))
-    (.on stream "end" (fn [] (put! c {:ok (.digest shasum "hex")})))
+    (.on stream "end" (fn [] (put! c (verify (.digest shasum "hex") expected))))
     c))
 
 (comment
-  (take! (checkum "/tmp/lein-standalone383452244645207519.jar" :sha512) (fn [r] (info r ::log))))
+  (info (checkum "/home/ronen/.ackrc" "910d37b2542915dec2f2cb7a0da34f9b" :md5)))
