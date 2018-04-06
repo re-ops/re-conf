@@ -1,5 +1,6 @@
 (ns re-conf.cljs.core
   (:require
+   [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.template :as t]
@@ -11,6 +12,8 @@
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
+
+(def process (js/require "process"))
 
 (defn run [c next]
   (go
@@ -85,10 +88,21 @@
   (go
     (pkg-consumer (@channels :pkg))))
 
+
+(defn assert-node-major-version
+  "Node Major version check"
+  []
+  (let [version (.-version process)
+        major (second (re-find #"v(\d+)\.(\d+)\.(\d+)" version))
+        minimum 8]
+    (when (> minimum (str/parse-int major))
+      (error {:message "Node major version is too old" :version version :required minimum} ::assertion)
+      (.exit process 1)
+      )))
+
 (defn -main [& args]
-  (take! (setup)
-         (fn [r]
-           (info "Started re-conf" ::main))))
+  (assert-node-major-version)
+  (take! (setup) (fn [r] (info "Started re-conf" ::main))))
 
 (set! *main-cli-fn* -main)
 
