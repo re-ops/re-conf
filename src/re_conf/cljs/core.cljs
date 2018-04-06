@@ -88,7 +88,6 @@
   (go
     (pkg-consumer (@channels :pkg))))
 
-
 (defn assert-node-major-version
   "Node Major version check"
   []
@@ -97,8 +96,7 @@
         minimum 8]
     (when (> minimum (str/parse-int major))
       (error {:message "Node major version is too old" :version version :required minimum} ::assertion)
-      (.exit process 1)
-      )))
+      (.exit process 1))))
 
 (defn -main [& args]
   (assert-node-major-version)
