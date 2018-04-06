@@ -21,8 +21,7 @@
           r (<! (f))
           end (.hrtime process start)]
       (debug (assoc r :profile end) ::profile)
-       r
-      )))
+      r)))
 
 (defn run [c next]
   (go
