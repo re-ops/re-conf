@@ -15,11 +15,20 @@
 
 (def process (js/require "process"))
 
+(defn profile [f]
+  (go
+    (let [start (.hrtime process)
+          r (<! (f))
+          end (.hrtime process start)]
+      (debug (assoc r :profile end) ::profile)
+       r
+      )))
+
 (defn run [c next]
   (go
     (let [r (<! c)]
       (if (:ok r)
-        (<! (next))
+        (<! (profile next))
         r))))
 
 (def channels (atom {:pkg (chan 10)}))
@@ -37,6 +46,7 @@
       (take! (run-install pkg) (fn [r] (put! resp r))))
     (recur)))
 
+; resources
 (defn checksum
   "Checksum a file and check expected value"
   ([file e k]
