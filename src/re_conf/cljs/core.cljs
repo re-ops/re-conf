@@ -2,13 +2,14 @@
   (:require
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
+   [re-conf.cljs.pkg :refer (initialize)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.template :as t]
    [re-conf.cljs.log :refer (info debug error)]
    [re-conf.cljs.download :as d]
    [re-conf.cljs.common :refer (channel?)]
    [cljs.core.match :refer-macros  [match]]
-   [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
+   [cljs.core.async :as async :refer [<! >! chan go take! put!]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -30,21 +31,6 @@
         (<! (profile next))
         r))))
 
-(def channels (atom {:pkg (chan 10)}))
-
-(defn- run-install [pkg]
-  (case (os)
-    "linux" (sh "apt" "install" pkg "-y")
-    "freebsd" (sh "pkg" "install" "-y" pkg)
-    :default (throw  (js/Error. "No matching package provider found for "))))
-
-(defn pkg-consumer [c]
-  (go-loop []
-    (let [[pkg resp] (<! c)]
-      (debug "running pkg install" ::log)
-      (take! (run-install pkg) (fn [r] (put! resp r))))
-    (recur)))
-
 ; resources
 (defn checksum
   "Checksum a file and check expected value"
@@ -64,13 +50,6 @@
   (if (channel? a)
     (run a (fn [] (apply sh args)))
     (apply sh (conj args a))))
-
-(defn install
-  [pkg]
-  (go
-    (let [resp (chan)]
-      (>! (@channels :pkg) [pkg resp])
-      (<! resp))))
 
 (defn template
   "Create a file from a template with args"
@@ -93,9 +72,7 @@
 
 (defn setup
   "Setup our environment"
-  []
-  (go
-    (pkg-consumer (@channels :pkg))))
+  [])
 
 (defn assert-node-major-version
   "Node Major version check"
@@ -109,7 +86,7 @@
 
 (defn -main [& args]
   (assert-node-major-version)
-  (take! (setup) (fn [r] (info "Started re-conf" ::main))))
+  (take! (initialize) (fn [r] (info "Started re-conf" ::main))))
 
 (set! *main-cli-fn* -main)
 
