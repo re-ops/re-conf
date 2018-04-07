@@ -9,7 +9,7 @@
    [re-conf.cljs.download :as d]
    [re-conf.cljs.common :refer (channel?)]
    [cljs.core.match :refer-macros  [match]]
-   [cljs.core.async :as async :refer [<! >! chan go take! put!]]
+   [cljs.core.async :as async :refer [<! >! chan go go-loop take! put!]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -24,37 +24,39 @@
       (debug (assoc r :profile end) ::profile)
       r)))
 
-(defn run [c next]
+(defn run [c f]
   (go
-    (let [r (<! c)]
+    (let [r (if c (<! c) {:ok true})]
       (if (:ok r)
-        (<! (profile next))
+        (<! (profile f))
         r))))
 
 ; resources
 (defn checksum
   "Checksum a file and check expected value"
   ([file e k]
-   (d/checkum file e k))
+   (checksum nil file e k))
   ([c file e k]
-   (run c (fn [] (d/checkum file e k)))))
+   (run c #(d/checkum file e k))))
 
 (defn download
   "Download file resource"
-  [url dest]
-  (d/download url dest))
+  ([url dest]
+   (download nil url dest))
+  ([c url dest]
+   (run c #(d/download url dest))))
 
 (defn exec
   "Shell execution resource"
   [a & args]
   (if (channel? a)
-    (run a (fn [] (apply sh args)))
-    (apply sh (conj args a))))
+    (run a  #(apply sh args))
+    (run nil #(apply sh (conj args a)))))
 
 (defn template
   "Create a file from a template with args"
   ([args tmpl dest]
-   (t/template args tmpl dest))
+   (template nil args tmpl dest))
   ([c args tmpl dest]
    (run c (fn [] (t/template args tmpl dest)))))
 
@@ -91,10 +93,5 @@
 (set! *main-cli-fn* -main)
 
 (comment
-  (->
-   (checksum "/home/ronen/.ackrc" "910d37b2542915dec2f2cb7a0da34f9b" :md5)
-   (exec "touch" "/tmp/bla")
-   (template {:keys {:key "abcd" :user "foo@bla"}} "resources/authorized_keys.mustache" "/tmp/keys")
-   (summary))
   (setup)
   (os))
