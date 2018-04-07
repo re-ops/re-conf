@@ -15,8 +15,20 @@
   (let [file (.createWriteStream fs dest)
         getter (.get request url)
         c (chan)]
-    (.on getter "error" (fn [e] (error e ::log) (put! c {:error e})))
-    (.on getter "response" (fn [resp] (put! c {:ok (.-statusCode resp)})))
+    (.on getter "error"
+         (fn [e]
+           (error e ::download)
+           (.unlink fs dest)
+           (put! c {:error e})))
+    (.on getter "response"
+         (fn [resp]
+           (when-not (= 200 (.-statusCode resp))
+             (error resp ::download)
+             (put! c {:error resp}))))
+    (.on file "finish"
+         (fn []
+           (.close file
+                   (fn [_] (put! c {:ok "file downloaded"})))))
     (.pipe getter file)
     c))
 
@@ -38,4 +50,4 @@
     c))
 
 (comment
-  (info (checkum "/home/ronen/.ackrc" "910d37b2542915dec2f2cb7a0da34f9b" :md5)))
+  (info (checkum "/tmp/packer_1.2.2_linux_amd64.zip" "" :sha256) ::debug))
