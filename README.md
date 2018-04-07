@@ -14,7 +14,7 @@ And not to be:
 
 * Magical
 * A data format
-* A DSL
+* An external DSL
 
 [![Build Status](https://travis-ci.org/re-ops/re-conf.png)](https://travis-ci.org/re-ops/re-conf)
 
