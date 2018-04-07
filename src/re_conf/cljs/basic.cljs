@@ -1,7 +1,7 @@
 (ns re-conf.cljs.basic
   (:require
    [re-conf.cljs.log :refer (info error)]
-   [re-conf.cljs.core :refer (install checksum template exec download summary)]))
+   [re-conf.cljs.core :refer (checksum template exec download summary)]))
 
 (defn packer
   "Setup up packer"
