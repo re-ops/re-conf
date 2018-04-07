@@ -1,8 +1,7 @@
 (ns re-conf.cljs.pkg
-  "Package management resource"
   (:require
-   [cljs.core.async :as async :refer [put! take! <! >! go go-loop chan]]
    [re-conf.cljs.log :refer (info debug error)]
+   [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]))
 
