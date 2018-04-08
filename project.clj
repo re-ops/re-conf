@@ -16,6 +16,9 @@
                  ; string manipulation
                  [funcool/cuerdas "2.0.5"]
 
+                 ; << macro
+                 [org.clojure/core.incubator "0.1.4"]
+
                  ; matching
                  [org.clojure/core.match "0.3.0-alpha5"]
 
