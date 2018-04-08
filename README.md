@@ -1,6 +1,6 @@
 # Intro
 
-Re-conf implements functional configuration management recipes in Clojurescript.
+Re-conf is a framework for implementing provisioning recipes in Clojurescript.
 
 Re-conf aims to be:
 
