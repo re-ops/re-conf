@@ -20,10 +20,10 @@ And not to be:
 
 ## Look and feel
 
-  * Re-conf use simple function to describe threading of resources
-  * Within each function the execution is serial, each resource is executed asynchronously and its result passed to the next step.
-  * Functions are executed concurrently multiple resource run at the same time (but still serial within each function).
-  * There is no hidden execution or dependency graph.
+  * Re-conf use simple functions to describe threading of resources
+  * Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins.
+  * Functions are executed concurrently so multiple resource run at the same time (but still serial within each function).
+  * There is no hidden execution or dependency graph or any other hidden mechanism.
 
 ```clojure
 (defn packer
@@ -52,7 +52,7 @@ And not to be:
 ```
 
 ```bash
-# packer and restic installed at the same time!
+# packer and restic installed at the same time, but still consistent
 $ node re-conf.js
 2018-4-8 21:56:11 rosetta info [:re-conf.cljs.core/main] - Started re-conf
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking packer
