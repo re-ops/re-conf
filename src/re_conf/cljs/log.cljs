@@ -1,5 +1,7 @@
 (ns re-conf.cljs.log
   "Logging facade"
+  (:require-macros
+   [clojure.core.strint :refer (<<)])
   (:require
    [cljs.core.async :as async :refer [take!]]
    [re-conf.cljs.common :refer (channel?)]))
@@ -7,13 +9,23 @@
 (def winston (js/require "winston"))
 
 (def settings
-  (let [f (clj->js {"filename" "re-conf.log"})]
+  (let [f (clj->js {"filename" "re-conf.log" "colorize" true})]
     {:level "debug"
      :format (winston.format.combine (winston.format.timestamp) (winston.format.json))
-     :transports [(winston.transports.Console.)
-                  (winston.transports.File. f)]}))
+     :transports [(winston.transports.File. f)]}))
 
-(def logger (.createLogger winston (clj->js settings)))
+(defn console-format []
+  (winston.format.printf
+   (fn [info]
+     (let [date (.toISOString (js/Date.))
+           level (.-level info)
+           message (.stringify js/JSON (.-message info) nil 1)]
+       (<< "~{date} - ~{level}: ~{message}")))))
+
+(def logger
+  (let [base (.createLogger winston (clj->js settings))
+        fmt (winston.format.combine (winston.format.colorize) (console-format))]
+    (.add base (winston.transports.Console. (clj->js {:format fmt})))))
 
 (defn- winston-log
   "Using Winston to log"
@@ -39,6 +51,6 @@
   (log m n "debug"))
 
 (comment
-  (info "hello" ::log)
+  (info {:fo 1 :bla 2 :biiiggg ""} ::log)
   (debug "bla" ::log))
 
