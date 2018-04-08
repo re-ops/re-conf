@@ -1,36 +1,77 @@
 # Intro
 
-Re-conf is a configuration management implemented in Clojurescript.
+Re-conf is a configuration management recipes implemented in Clojurescript.
 
 Re-conf aims to be:
 
 * Fast(er) then existing solutions (Puppet, Chef etc..)
 * Portable (should run on any hardware and Unix like OS).
 * Simple to operate and deploy.
-* REPL first workflow.
-* Debug and tracing built in.
+* REPL first workflow in development.
+* Debug, tracing and profiling built in.
 
-And not to be:
+And not to:
 
+* Use a dataformat as a base language
+* Implement external DSL
 * Magical
-* A data format
-* An external DSL
 
 [![Build Status](https://travis-ci.org/re-ops/re-conf.png)](https://travis-ci.org/re-ops/re-conf)
 
-# Resources
+## Look and feel
 
-Expect the following resources:
+  * Re-conf use simple function to describe threading of resources
+  * Within each function the execution is serial, each resource is run asynchronously and its result passed to the next step.
+  * Functions are executed concurrently multiple resource run at the same time (but still serial at the same function).
 
-* File, create a file from a source.
-* Template for generating a file.
-* Edit for editing a file.
-* Service, start stop and restart.
-* Package for installing packages.
-* Repo for adding package repositories.
-* Exec for executing shell commands.
-* Download for performing file download operations.
-* Checksum for verifying files.
+```clojure
+(defn packer
+  "Setup up packer"
+  []
+  (let [dest "/tmp/packer_1.2.2_linux_amd64.zip"
+        sha "6575f8357a03ecad7997151234b1b9f09c7a5cf91c194b23a461ee279d68c6a8"
+        url "https://releases.hashicorp.com/packer/1.2.2/packer_1.2.2_linux_amd64.zip"]
+    (->
+     (download url dest)
+     (checksum dest sha :sha256)
+     (exec "/usr/bin/unzip" "-o" dest "-d" "/tmp/packer")
+     (summary "installing packer done"))))
+
+(defn restic
+  "Setting up restic"
+  []
+  (let [dest "/tmp/restic_0.8.3_linux_amd64.bz2"
+        sha "1e9aca80c4f4e263c72a83d4333a9dac0e24b24e1fe11a8dc1d9b38d77883705"
+        url "https://github.com/restic/restic/releases/download/v0.8.3/restic_0.8.3_linux_amd64.bz2"]
+    (->
+     (download url dest)
+     (checksum dest sha :sha256)
+     (exec "bzip2" "-f" "-d" dest)
+     (summary "installing restic done"))))
+```
+
+```bash
+# packer and restic installed at the same time!
+$ node re-conf.js
+2018-4-8 21:56:11 rosetta info [:re-conf.cljs.core/main] - Started re-conf
+2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking packer
+2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking restic
+```
+This means that we can keep things serial at each function while running concurrently between functions.
+
+## Resources
+
+ * File, create a file from a source.
+ * Template for generating a file.
+ * Edit for editing a file.
+ * Service, start stop and restart.
+ * Package for installing packages.
+ * Repo for adding package repositories.
+ * Exec for executing shell commands.
+ * Download for performing file download operations.
+ * Checksum for verifying files.
+
+Adding more resources is just a couple of functions away.
 
 # Platforms
 
