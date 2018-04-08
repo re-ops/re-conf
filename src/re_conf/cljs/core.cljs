@@ -1,5 +1,8 @@
 (ns re-conf.cljs.core
+  (:require-macros
+   [clojure.core.strint :refer (<<)])
   (:require
+   [clojure.repl :as rpl]
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.pkg :refer (initialize)]
@@ -86,12 +89,24 @@
       (error {:message "Node major version is too old" :version version :required minimum} ::assertion)
       (.exit process 1))))
 
+(defn invoke
+  "Invoking all public fn in ns concurrently"
+  [n]
+  (doseq [[k v] (js->clj (js/Object n))]
+    (debug (<< "invoking ~{k}") ::invoke)
+    (go (.call v))))
+
 (defn -main [& args]
   (assert-node-major-version)
-  (take! (initialize) (fn [r] (info "Started re-conf" ::main))))
+  (take! (initialize)
+         (fn [r]
+           (info "Started re-conf" ::main)
+           (invoke re-conf.cljs.basic))))
 
 (set! *main-cli-fn* -main)
 
 (comment
+  (name re-conf.cljs.basic)
+  (invoke re-conf.cljs.basic)
   (setup)
   (os))
