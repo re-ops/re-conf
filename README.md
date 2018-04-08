@@ -21,8 +21,9 @@ And not to be:
 ## Look and feel
 
   * Re-conf use simple function to describe threading of resources
-  * Within each function the execution is serial, each resource is run asynchronously and its result passed to the next step.
-  * Functions are executed concurrently multiple resource run at the same time (but still serial at the same function).
+  * Within each function the execution is serial, each resource is executed asynchronously and its result passed to the next step.
+  * Functions are executed concurrently multiple resource run at the same time (but still serial within each function).
+  * There is no hidden execution or dependency graph.
 
 ```clojure
 (defn packer
@@ -57,7 +58,6 @@ $ node re-conf.js
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking packer
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking restic
 ```
-This means that we can keep things serial at each function while running concurrently between functions.
 
 ## Resources
 
