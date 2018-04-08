@@ -3,10 +3,14 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [clojure.string :refer (replace-first)]
    [cljs.core.async :as async :refer [take!]]
    [re-conf.cljs.common :refer (channel?)]))
 
 (def winston (js/require "winston"))
+(def os (js/require "os"))
+
+(def hostname (.hostname os))
 
 (def settings
   (let [f (clj->js {"filename" "re-conf.log" "colorize" true})]
@@ -17,10 +21,12 @@
 (defn console-format []
   (winston.format.printf
    (fn [info]
-     (let [date (.toISOString (js/Date.))
+     (let [date (.toLocaleString (js/Date.))
            level (.-level info)
-           message (.stringify js/JSON (.-message info) nil 1)]
-       (<< "~{date} - ~{level}: ~{message}")))))
+           n (replace-first (name (.-ns info)) ":" "")
+           message (.-message info)
+           out (if (string? message) message (.stringify js/JSON message nil 1))]
+       (<< "~{date} ~{hostname} ~{level} [~{n}] - ~{out}")))))
 
 (def logger
   (let [base (.createLogger winston (clj->js settings))
