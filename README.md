@@ -1,6 +1,6 @@
 # Intro
 
-Re-conf is a configuration management recipes implemented in Clojurescript.
+Re-conf implements functional configuration management recipes in Clojurescript.
 
 Re-conf aims to be:
 
@@ -10,11 +10,11 @@ Re-conf aims to be:
 * REPL first workflow in development.
 * Debug, tracing and profiling built in.
 
-And not to:
+And not to be:
 
-* Use a dataformat as a base language
-* Implement external DSL
-* Magical
+* disguised language in a dataformat
+* an external DSL
+* magical
 
 [![Build Status](https://travis-ci.org/re-ops/re-conf.png)](https://travis-ci.org/re-ops/re-conf)
 
