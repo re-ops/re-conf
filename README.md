@@ -5,25 +5,27 @@ Re-conf is a framework for implementing provisioning recipes in Clojurescript.
 Re-conf aims to be:
 
 * Fast(er) then existing solutions (Puppet, Chef etc..)
-* Portable (should run on any hardware and Unix like OS).
-* Simple to operate and deploy.
-* REPL first workflow in development.
-* Debug, tracing and profiling built in.
+* Portable (should run on any hardware and Unix like OS)
+* Simple to operate and deploy provisioning code
+* REPL first workflow in development
+* Tracing and profiling built in
 
 And not to be:
 
+* An agent for orchestrating remote operations ([Re-mote](https://github.com/re-ops/re-mote), [Re-gent](https://github.com/re-ops/re-gent) handle that)
 * disguised language in a dataformat
 * an external DSL
 * magical
+
 
 [![Build Status](https://travis-ci.org/re-ops/re-conf.png)](https://travis-ci.org/re-ops/re-conf)
 
 ## Look and feel
 
-  * Re-conf use simple functions to describe threading of resources
-  * Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins.
-  * Functions are executed concurrently so multiple resource run at the same time (but still serial within each function).
-  * There is no hidden execution or dependency graph or any other hidden mechanism.
+* Re-conf use simple functions to describe threading of resources
+* Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins
+* Functions are executed concurrently so multiple resource run at the same time (but still serial within each function)
+* There is no hidden execution or dependency graph or any other hidden mechanism
 
 ```clojure
 (defn packer
