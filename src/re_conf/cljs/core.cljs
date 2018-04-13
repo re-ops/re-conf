@@ -75,10 +75,6 @@
               {:ok o} (info m ::summary-ok)
               :else (error r ::summary-error))))))
 
-(defn setup
-  "Setup our environment"
-  [])
-
 (defn assert-node-major-version
   "Node Major version check"
   []
@@ -108,5 +104,5 @@
 (comment
   (name re-conf.cljs.basic)
   (invoke re-conf.cljs.basic)
-  (setup)
-  (os))
+  (initialize)
+  (info (os :platform) ::os))
