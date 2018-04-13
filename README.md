@@ -63,16 +63,20 @@ $ node re-conf.js
 
 ## Resources
 
- * File, create a file from a source.
+Implemented:
+
  * Template for generating a file.
- * Edit for editing a file.
- * Service, start stop and restart.
  * Package for installing packages.
- * Repo for adding package repositories.
  * Exec for executing shell commands.
  * Download for performing file download operations.
  * Checksum for verifying files.
 
+TBD:
+
+ * File, create a file from a source.
+ * Edit for editing a file.
+ * Repo for adding package repositories.
+ * Service, start stop and restart.
 Adding more resources is just a couple of functions away.
 
 # Platforms
