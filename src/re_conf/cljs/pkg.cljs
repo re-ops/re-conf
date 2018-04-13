@@ -30,8 +30,8 @@
     (let [[action args resp] (<! c)]
       (debug (<< "running ~{action} ~{args}") ::pkg-consumer)
       (case action
-        :install (take! (run-install args) (fn [r] (put! resp r)))
-        :update  (take! (run-update) (fn [r] (put! resp r)))))
+        :install (>! resp (<! (run-install args)))
+        :update  (>! resp (<! (run-update)))))
     (recur)))
 
 (defn- call [action args]
@@ -57,6 +57,7 @@
     (pkg-consumer serialize)))
 
 (comment
-  (info (install "") ::install)
+  (initialize)
+  (info (install "tmux") ::install)
   (info (update-) ::update)
   (info (update-) ::update))
