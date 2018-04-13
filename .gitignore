@@ -11,3 +11,4 @@ re-conf.js
 .cljs_node_repl
 package-lock.json
 re-conf.log
+remote
