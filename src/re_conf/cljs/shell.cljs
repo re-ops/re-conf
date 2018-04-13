@@ -38,7 +38,7 @@
   (let [[args opts] (split-with string? as)
         options (apply hash-map opts)]
     (cond->> args
-      (options :sudo) (into ["/usr/bin/sudo"] args)
+      (options :sudo) (into ["/usr/bin/sudo"])
       (options :dry) (or ["echo" "'dry run!'"]))))
 
 (defn sh [& as]
@@ -53,4 +53,4 @@
           {:error e})))))
 
 (comment
-  (take! (sh "apt" "update") (fn [r] (info r ::take))))
+  (info (sh "ls" "/foo" :sudo true) ::take))
