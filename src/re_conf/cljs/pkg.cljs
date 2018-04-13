@@ -1,4 +1,6 @@
 (ns re-conf.cljs.pkg
+  (:require-macros
+   [clojure.core.strint :refer (<<)])
   (:require
    [re-conf.cljs.log :refer (info debug error)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
@@ -8,28 +10,53 @@
 (def serialize (chan 10))
 
 (defn- run-install [pkg]
-  (case (os)
-    "linux" (sh "apt" "install" pkg "-y")
-    "freebsd" (sh "pkg" "install" "-y" pkg)
-    :default (throw  (js/Error. "No matching package provider found for "))))
+  (go
+    (let [{:keys [platform]} (<! (os))]
+      (case platform
+        "linux" (<! (sh "/usr/bin/apt" "install" pkg "-y" :sudo true))
+        "freebsd" (<! (sh "pkg" "install" "-y" pkg :sudo true))
+        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+
+(defn- run-update []
+  (go
+    (let [{:keys [platform]} (<! (os))]
+      (case platform
+        "linux" (<! (sh "/usr/bin/apt" "update" :sudo true))
+        "freebsd" (<! (sh "pkg" "update" :sudo true))
+        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
 
 (defn pkg-consumer [c]
   (go-loop []
-    (let [[pkg resp] (<! c)]
-      (debug "running pkg install" ::log)
-      (take! (run-install pkg) (fn [r] (put! resp r))))
+    (let [[action args resp] (<! c)]
+      (debug (<< "running ~{action} ~{args}") ::pkg-consumer)
+      (case action
+        :install (take! (run-install args) (fn [r] (put! resp r)))
+        :update  (take! (run-update) (fn [r] (put! resp r)))))
     (recur)))
 
-(defn install
-  "install "
-  [pkg]
+(defn- call [action args]
   (go
     (let [resp (chan)]
-      (>! serialize [pkg resp])
+      (>! serialize [action args resp])
       (<! resp))))
+
+(defn install
+  "install a package"
+  [pkg]
+  (call :install pkg))
+
+(defn update-
+  "update package manager"
+  []
+  (call :update nil))
 
 (defn initialize
   "Setup the serializing go loop for package management access"
   []
   (go
     (pkg-consumer serialize)))
+
+(comment
+  (info (install "") ::install)
+  (info (update-) ::update)
+  (info (update-) ::update))
