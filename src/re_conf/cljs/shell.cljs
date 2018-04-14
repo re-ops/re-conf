@@ -1,9 +1,10 @@
 (ns re-conf.cljs.shell
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-   [re-conf.cljs.log :refer (info debug error)]
+   [re-conf.cljs.log :refer (channel? info debug error)]
    [cuerdas.core :as str]
    [cljs.nodejs :as nodejs]
+   [re-conf.cljs.common :refer (run)]
    [cljs.core.match :refer-macros  [match]]
    [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
@@ -20,7 +21,7 @@
     (.on p "error" (fn [e] (put! c [:error e])))
     c))
 
-(defn exec
+(defn- execute
   "Executes cmd with args. returns a channel immediately which
     will eventually receive a result vector of pairs [:kind data-str]
     with the last pair being [:exit code]"
@@ -41,16 +42,23 @@
       (options :sudo) (into ["/usr/bin/sudo"])
       (options :dry) (or ["echo" "'dry run!'"]))))
 
-(defn sh [& as]
+(defn- sh [& as]
   (go
     (let [[cmd & args] (apply-options as)]
       (try
-        (let [{:keys [exit] :as r} (into {} (<! (exec cmd args)))]
+        (let [{:keys [exit] :as r} (into {} (<! (execute cmd args)))]
           (if (= 0 exit)
             {:ok r}
             {:error r}))
         (catch js/Error e
           {:error e})))))
+
+(defn exec
+  "Shell execution resource"
+  [a & args]
+  (if (channel? a)
+    (run a  #(apply sh args))
+    (run nil #(apply sh (conj args a)))))
 
 (comment
   (info (sh "ls" "/foo" :sudo true) ::take))

@@ -1,8 +1,12 @@
-(ns re-conf.cljs.basic
+(ns re-conf.rcp.basic
   (:require
    [cljs.core.async :refer [go]]
    [re-conf.cljs.log :refer (info error)]
-   [re-conf.cljs.core :refer (checksum template exec download summary)]))
+   [re-conf.cljs.pkg :refer (install)]
+   [re-conf.cljs.download :refer (download checksum)]
+   [re-conf.cljs.archive :refer (unzip)]
+   [re-conf.cljs.shell :refer (exec)]
+   [re-conf.cljs.core :refer (template summary)]))
 
 (defn packer
   "Setup up packer"
@@ -13,7 +17,7 @@
     (->
      (download url dest)
      (checksum dest sha :sha256)
-     (exec "/usr/bin/unzip" "-o" dest "-d" "/tmp/packer")
+     (unzip dest "/tmp/packger")
      (summary "installing packer done"))))
 
 (defn restic

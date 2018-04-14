@@ -1,6 +1,7 @@
 (ns re-conf.cljs.download
   "nodejs native file download"
   (:require
+   [re-conf.cljs.common :refer (run)]
    [re-conf.cljs.log :refer (info error)]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
    [cljs.nodejs :as nodejs]))
@@ -9,7 +10,7 @@
 (def request (js/require "request"))
 (def crypto (js/require "crypto"))
 
-(defn download
+(defn run-download
   "download a file"
   [url dest]
   (let [file (.createWriteStream fs dest)
@@ -39,7 +40,7 @@
     {:ok {:message "checksum matches" :sum sum :expected expected}}
     {:error {:message "checksum does not match!" :sum sum :expected expected}}))
 
-(defn checkum
+(defn run-checkum
   [f expected k]
   (let [shasum (.createHash crypto (name k))
         stream (.ReadStream fs f)
@@ -49,5 +50,21 @@
     (.on stream "end" (fn [] (put! c (verify (.digest shasum "hex") expected))))
     c))
 
+; resources
+
+(defn checksum
+  "Checksum a file and check expected value"
+  ([file e k]
+   (checksum nil file e k))
+  ([c file e k]
+   (run c #(run-checkum file e k))))
+
+(defn download
+  "Download file resource"
+  ([url dest]
+   (download nil url dest))
+  ([c url dest]
+   (run c #(run-download url dest))))
+ 
 (comment
   (info (checkum "/tmp/packer_1.2.2_linux_amd64.zip" "" :sha256) ::debug))

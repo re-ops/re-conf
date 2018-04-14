@@ -4,13 +4,18 @@
    [clojure.core.strint :refer (<<)])
   (:require
    [clojure.string :refer (replace-first)]
-   [cljs.core.async :as async :refer [take!]]
-   [re-conf.cljs.common :refer (channel?)]))
+   [cljs.core.async :as async :refer [take!]]))
 
 (def winston (js/require "winston"))
+
 (def os (js/require "os"))
 
 (def hostname (.hostname os))
+
+(defn- channel?
+  "check is x is a channel"
+  [x]
+  (= (type x) cljs.core.async.impl.channels/ManyToManyChannel))
 
 (def settings
   (let [f (clj->js {"filename" "re-conf.log" "colorize" true})]
