@@ -65,6 +65,6 @@
    (download nil url dest))
   ([c url dest]
    (run c #(run-download url dest))))
- 
+
 (comment
   (info (checkum "/tmp/packer_1.2.2_linux_amd64.zip" "" :sha256) ::debug))

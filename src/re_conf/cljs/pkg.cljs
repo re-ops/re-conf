@@ -35,14 +35,14 @@
         "freebsd" (<! (sh "pkg" "upgrade" "-y" :sudo true))
         :default  {:error (<< "No matching package provider found for ~{platform}")}))))
 
-(defn- run-ppa 
+(defn- run-ppa
   "Add a ppa repository"
   [repo]
   (go
     (let [{:keys [distro platform]} (<! (os))]
       (if (and (= platform "linux") (= distro "Ubuntu"))
-         (<! (sh "/usr/bin/add-apt-repository" (<< "ppa:~{repo}") "-y" :sudo true))
-         {:error (<< "ppa isn't supported under ~{platform} ~{distro}")}))))
+        (<! (sh "/usr/bin/add-apt-repository" (<< "ppa:~{repo}") "-y" :sudo true))
+        {:error (<< "ppa isn't supported under ~{platform} ~{distro}")}))))
 
 (defn- run-key
   "Add an apt key"
@@ -50,9 +50,8 @@
   (go
     (let [{:keys [distro platform]} (<! (os))]
       (if (and (= platform "linux") (= distro "Ubuntu"))
-         (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
-         {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
-
+        (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
+        {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
 
 (defn pkg-consumer [c]
   (go-loop []
@@ -63,8 +62,7 @@
         :update  (>! resp (<! (run-update)))
         :upgrade  (>! resp (<! (run-upgrade)))
         :ppa  (>! resp (<! (run-ppa args)))
-        :key  (>! resp (<! (run-key args)))
-        ))
+        :key  (>! resp (<! (run-key args)))))
     (recur)))
 
 (defn- call [action args]
@@ -76,35 +74,35 @@
 (defn install
   "Install a package"
   ([pkg]
-    (call :install pkg))
+   (call :install pkg))
   ([c pkg]
    (run c #(call :install pkg))))
 
 (defn update
   "Update package manager metadata"
   ([]
-    (call :update nil))
+   (call :update nil))
   ([c]
    (run c #(call :update nil))))
 
 (defn upgrade
   "Upgrade all installed packages"
   ([]
-    (call :upgrade nil))
+   (call :upgrade nil))
   ([c]
    (run c #(call :upgrade nil))))
 
 (defn ppa
   "Add an Ubuntu PPA repository"
   ([repo]
-    (call :ppa repo))
+   (call :ppa repo))
   ([c repo]
    (run c #(call :ppa repo))))
 
 (defn key
   "Import a gpg apt key"
   ([server id]
-    (call :key [server id]))
+   (call :key [server id]))
   ([c server id]
    (run c #(call :key [server id]))))
 
@@ -119,5 +117,4 @@
   (initialize)
   (info (install "zsh") ::install)
   (info (update) ::update)
-  (info (upgrade) ::update)
-  )
+  (info (upgrade) ::update))

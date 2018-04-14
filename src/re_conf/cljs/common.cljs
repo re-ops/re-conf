@@ -1,9 +1,8 @@
 (ns re-conf.cljs.common
   "Common resource functions"
   (:require
-    [re-conf.cljs.log :refer (info debug error)]
-    [cljs.core.async :as async :refer [<! go]]
-    ))
+   [re-conf.cljs.log :refer (info debug error)]
+   [cljs.core.async :as async :refer [<! go]]))
 
 (def process (js/require "process"))
 
@@ -21,4 +20,4 @@
       (if (:ok r)
         (<! (profile f))
         r))))
- 
+
