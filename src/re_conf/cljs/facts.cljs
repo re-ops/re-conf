@@ -4,6 +4,7 @@
    [cljs.core.async :as async :refer [<! put! chan]]))
 
 (def si (js/require "systeminformation"))
+(def os- (js/require "os"))
 
 (defn get- [c k]
   (fn [d]
@@ -18,5 +19,11 @@
      (.osInfo si (get- c k))
      c)))
 
+(defn home 
+   "current user home directory" 
+   []
+   (str (.-homedir os-)))
+
 (comment
+  (home)
   (info (os) ::log))
