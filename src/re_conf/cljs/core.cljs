@@ -2,14 +2,10 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [clojure.repl :as rpl]
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.pkg :as p :refer (initialize)]
-   [re-conf.cljs.shell :refer (sh)]
-   [re-conf.cljs.template :as t]
-   [re-conf.cljs.log :refer (channel? info debug error)]
-   [re-conf.cljs.download :as d]
+   [re-conf.cljs.log :refer (info debug error)]
    [re-conf.cljs.common :refer (run)]
    [cljs.core.match :refer-macros  [match]]
    [cljs.core.async :as async :refer [<! >! chan go go-loop take! put!]]
@@ -18,13 +14,6 @@
 (nodejs/enable-util-print!)
 
 (def process (js/require "process"))
-
-(defn template
-  "Create a file from a template with args"
-  ([args tmpl dest]
-   (template nil args tmpl dest))
-  ([c args tmpl dest]
-   (run c (fn [] (t/template args tmpl dest)))))
 
 (defn summary
   "Print result"
