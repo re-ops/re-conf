@@ -21,10 +21,9 @@
             {:error {:message "reading template source failed" :error esp :source tmpl}}
             {:ok {:message "writing template source success" :template tmpl :dest dest}}))))))
 
-(defn run-chown 
-   "Change folder owner and group"
-   [dest usr grp]
-  )
+(defn run-chown
+  "Change folder owner and group"
+  [dest usr grp])
 
 (defn template
   "File template resource"
@@ -33,5 +32,4 @@
   ([c args tmpl dest]
    (run c (fn [] (run-template args tmpl dest)))))
 
-(comment
-  )
+(comment)

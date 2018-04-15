@@ -9,11 +9,9 @@
    [re-conf.cljs.shell :refer (exec)]
    [re-conf.cljs.core :refer (summary)]))
 
-
 (defn tmux
-   "Setup tmux"
-   []
-   (->
-     (install "tmux")
-     (clone "git://github.com/narkisr/.tmux.git" (<< "~(home)/.tmux"))
-     ))
+  "Setup tmux"
+  []
+  (->
+   (install "tmux")
+   (clone "git://github.com/narkisr/.tmux.git" (<< "~(home)/.tmux"))))

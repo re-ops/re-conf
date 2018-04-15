@@ -19,10 +19,10 @@
      (.osInfo si (get- c k))
      c)))
 
-(defn home 
-   "current user home directory" 
-   []
-   (str (.-homedir os-)))
+(defn home
+  "current user home directory"
+  []
+  (str (.-homedir os-)))
 
 (comment
   (home)

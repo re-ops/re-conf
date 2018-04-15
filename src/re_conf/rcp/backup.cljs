@@ -1,11 +1,9 @@
 (ns re-conf.rcp.backup
   "Backup utilities recipes"
-  (:require 
-    [re-conf.cljs.download :refer (download checksum)]
-    [re-conf.cljs.shell :refer (exec)]
-    [re-conf.cljs.core :refer (summary)]
-    )
- )
+  (:require
+   [re-conf.cljs.download :refer (download checksum)]
+   [re-conf.cljs.shell :refer (exec)]
+   [re-conf.cljs.core :refer (summary)]))
 
 (defn restic
   "Setting up restic"
