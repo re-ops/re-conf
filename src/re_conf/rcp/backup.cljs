@@ -3,7 +3,7 @@
   (:require
    [re-conf.cljs.download :refer (download checksum)]
    [re-conf.cljs.shell :refer (exec)]
-   [re-conf.cljs.core :refer (summary)]))
+   [re-conf.cljs.output :refer (summary)]))
 
 (defn restic
   "Setting up restic"

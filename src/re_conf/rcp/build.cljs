@@ -4,7 +4,7 @@
    [re-conf.cljs.download :refer (download checksum)]
    [re-conf.cljs.archive :refer (unzip)]
    [re-conf.cljs.shell :refer (exec)]
-   [re-conf.cljs.core :refer (summary)]))
+   [re-conf.cljs.output :refer (summary)]))
 
 (defn packer
   "Setup up packer"
