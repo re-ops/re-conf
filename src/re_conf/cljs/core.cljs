@@ -25,14 +25,14 @@
       (.exit process 1))))
 
 (defn- arg-count
-   "How many arguments the function expects to get"
-   [f]
-   (.-length f))
+  "How many arguments the function expects to get"
+  [f]
+  (.-length f))
 
 (defn- fns
-   "Get public functions from a ns"
-   [n]
-   (js->clj (js/Object n)))
+  "Get public functions from a ns"
+  [n]
+  (js->clj (js/Object n)))
 
 (defn invoke
   "Invoking all public fn in ns concurrently"
@@ -42,8 +42,7 @@
     (go
       (case (arg-count f)
         0 (.call f)
-        1 (.call f env)
-        ))))
+        1 (.call f env)))))
 
 (defn -main [& args]
   (assert-node-major-version)

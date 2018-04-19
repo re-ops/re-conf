@@ -4,7 +4,7 @@
    [clojure.core.strint :refer (<<)])
   (:require
    [re-conf.cljs.pkg :refer (install)]
-   [re-conf.cljs.file :refer (chown directory)]
+   [re-conf.cljs.file :refer (chown directory symlink)]
    [re-conf.cljs.facts :refer (home)]
    [re-conf.cljs.git :refer (clone)]
    [re-conf.cljs.shell :refer (exec)]
@@ -13,18 +13,17 @@
 (defn ^{:private true} tmux
   "Setup tmux for user"
   [{:keys [user]}]
-  (let [dest (<< "/home/~{user}/.tmux")]
+  (let [home (<< "/home/~{user}/") dest (<< "~{home}/.tmux")]
     (->
      (install "tmux")
-     (clone "git://github.com/narkisr/.tmux.git" )
+     (clone "git://github.com/narkisr/.tmux.git")
      (chown user dest)
      (directory (<< "~{dest}/plugins") 777)
      (clone "git://github.com/tmux-plugins/tpm" (<< "~{dest}/plugins/tpm"))
-     ;; (symlink (<< "{dest}/.tmux.conf") (<< "/home/{user}/.tmux.conf")) 
-     )))
+     (symlink (<< "{dest}/.tmux.conf") (<< "~{home}/.tmux.conf")))))
 
 (defn plugins
   "Setup Tmux plugins"
-  [{:keys [user]}]
-  )
+  [{:keys [user]}])
 
+(comment)

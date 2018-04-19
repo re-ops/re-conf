@@ -1,10 +1,8 @@
 (ns re-conf.cljs.output
   (:require
-    [cljs.core.match :refer-macros  [match]]
-    [re-conf.cljs.log :refer (info debug error)]
-    [cljs.core.async :as async :refer [take!]]
-    )
- )
+   [cljs.core.match :refer-macros  [match]]
+   [re-conf.cljs.log :refer (info debug error)]
+   [cljs.core.async :as async :refer [take!]]))
 
 (defn summary
   "Print result"
