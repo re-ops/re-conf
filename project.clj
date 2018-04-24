@@ -59,7 +59,19 @@
                 :output-dir "target/js/compiled/dev"
                 :target :nodejs
                 :optimizations :none
-                :source-map-timestamp true}}
+                :source-map-timestamp true
+		   }
+             }
+             {:id "test"
+              :source-paths ["src" "test"]
+              :notify-command ["node" "target/unit-tests.js"]
+              :compiler {
+                 :output-to "target/unit-tests.js"
+                 :optimizations :none
+                 :target :nodejs
+               :main re-conf.test.suite
+		   }
+		 }
              {:id "prod"
               :source-paths ["src"]
               :compiler {
