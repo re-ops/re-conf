@@ -18,7 +18,7 @@
      (install "tmux")
      (clone "git://github.com/narkisr/.tmux.git")
      (chown user dest)
-     (directory (<< "~{dest}/plugins"))
+     (directory (<< "~{dest}/plugins") :present)
      (clone "git://github.com/tmux-plugins/tpm" (<< "~{dest}/plugins/tpm"))
      (symlink (<< "{dest}/.tmux.conf") (<< "~{home}/.tmux.conf")))))
 

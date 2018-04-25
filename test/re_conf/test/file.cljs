@@ -7,10 +7,17 @@
 
 (def fs (js/require "fs"))
 
+(defn ok?  [m]
+  (contains? m :ok))
+
 (deftest resources
-  (testing "directory creation"
+  (testing "directory resource"
     (async done
            (go
-             (is (:ok (<! (directory "/tmp/2"))))
-             (is (nil? (<! (adir? "/tmp/2")))))
-           (done))))
+             (let [present (<! (directory "/tmp/2" :present))
+                   dir (<! (adir? "/tmp/2"))
+                   absent (<! (directory "/tmp/2" :absent))]
+               (is (ok? present))
+               (is dir)
+               (is (ok? absent))
+               (done))))))

@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [cljs-node-io.fs :refer (amkdir)]
+   [cljs-node-io.fs :as fs]
    [re-conf.cljs.common :refer (run obj->clj)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.log :refer (info)]
@@ -11,7 +11,7 @@
    [cljs-node-io.core :as io]
    [cljstache.core :refer [render]]))
 
-(def fs (js/require "fs"))
+(def nfs (js/require "fs"))
 
 (defn translate
   "convert io.fs nil to :ok and err? into {:error e}"
@@ -19,20 +19,15 @@
   (go
     (let [r (<! c)]
       (cond
-        (nil? r) {:ok m}
+        (nil? (first r)) {:ok m}
         :else {:error (map obj->clj r)}))))
 
 ; utility functions
-(defn exists?
-  "Check if a file exists"
-  [dest]
-  (.existsSync fs dest))
-
 (defn stats
   "Get file stats info"
   [dest]
   (let [c (chan)]
-    (.stat fs dest
+    (.stat nfs dest
            (fn [e s]
              (if e
                (put! c {:error e})
@@ -70,7 +65,7 @@
   "Create a symlink between source and target"
   [src target]
   (let [c (chan)]
-    (.symlink fs src target
+    (.symlink nfs src target
               (fn [e]
                 (if e
                   (put! c {:error e})
@@ -98,12 +93,24 @@
   ([c dest mode]
    (run c #(run-chmod dest mode))))
 
+(defn rmdir [d]
+  (go
+    (let [[err v]  (<! (fs/areaddir d))]
+      (if err
+        [err]
+        (if (empty? v)
+          (<! (fs/armdir d))
+          (<! (fs/arm-r d)))))))
+
+(def directory-states {:present fs/amkdir
+                       :absent rmdir})
+
 (defn directory
-  "Directory creation resource"
-  ([dest]
-   (translate (amkdir dest) (<< "directory ~{dest} created")))
-  ([c dest]
-   (run c #(directory dest))))
+  "Directory resource"
+  ([dest state]
+   (translate ((directory-states state) dest) (<< "Directory ~{dest} state is ~(name state)")))
+  ([c dest state]
+   (run c #(directory dest state))))
 
 (defn symlink
   "Symlink resource"
@@ -113,6 +120,7 @@
    (run c #(run-symlink src target))))
 
 (comment
-  (info (directory "/tmp/5") ::directory)
+  (info (go (contains? (<! (directory "/tmp/3" :absent)) :ok)) ::bla)
+  (info (go (<! (directory "/tmp/3" :present))) ::bla)
   (info (chmod "foo" "+x") ::chmod)
   (sh "/bin/chmod" mode dest :sudo true :dry true))
