@@ -1,8 +1,8 @@
 (ns re-conf.test.file
   (:require
-   [cljs-node-io.fs :refer (dir?)]
+   [cljs-node-io.fs :refer (adir?)]
    [cljs.core.async :as async :refer [<! go]]
-   [re-conf.cljs.file :refer (chown directory exists?)]
+   [re-conf.cljs.file :refer (chown directory)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (def fs (js/require "fs"))
@@ -11,6 +11,6 @@
   (testing "directory creation"
     (async done
            (go
-             (is (:ok (<! (directory "/tmp/2" 777)))))
-           (is (dir? "/tmp/2"))
+             (is (:ok (<! (directory "/tmp/2"))))
+             (is (nil? (<! (adir? "/tmp/2")))))
            (done))))

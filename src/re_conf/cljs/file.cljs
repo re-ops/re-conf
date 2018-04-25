@@ -3,7 +3,8 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.cljs.common :refer (run)]
+   [cljs-node-io.fs :refer (amkdir)]
+   [re-conf.cljs.common :refer (run obj->clj)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.log :refer (info)]
    [cljs.core.async :as async :refer [<! go put! chan]]
@@ -12,6 +13,33 @@
 
 (def fs (js/require "fs"))
 
+(defn translate
+  "convert io.fs nil to :ok and err? into {:error e}"
+  [c m]
+  (go
+    (let [r (<! c)]
+      (cond
+        (nil? r) {:ok m}
+        :else {:error (map obj->clj r)}))))
+
+; utility functions
+(defn exists?
+  "Check if a file exists"
+  [dest]
+  (.existsSync fs dest))
+
+(defn stats
+  "Get file stats info"
+  [dest]
+  (let [c (chan)]
+    (.stat fs dest
+           (fn [e s]
+             (if e
+               (put! c {:error e})
+               (put! c {:ok (js->clj s)}))))
+    c))
+
+; inner resource implemetation
 (defn- run-template
   "Create a file from a template with args"
   [args tmpl dest]
@@ -37,19 +65,6 @@
   "Change change file/folder owner and group"
   [dest mode & options]
   (sh "/bin/chmod" mode dest))
-
-(defn run-mkdir
-  "Create a directory if it does not exists"
-  [dest mode]
-  (let [c (chan)]
-    (if-not (.existsSync fs dest)
-      (.mkdir fs dest mode
-              (fn [e]
-                (if e
-                  (put! c {:error e})
-                  (put! c {:ok (<< "created ~{dest} with mode ~{mode}")}))))
-      (put! c {:ok (<< "~{dest} already exists, skipping")}))
-    c))
 
 (defn run-symlink
   "Create a symlink between source and target"
@@ -84,11 +99,11 @@
    (run c #(run-chmod dest mode))))
 
 (defn directory
-  "Directory resource"
-  ([dest mode]
-   (run-mkdir dest mode))
-  ([c dest mode]
-   (run c #(run-mkdir dest mode))))
+  "Directory creation resource"
+  ([dest]
+   (translate (amkdir dest) (<< "directory ~{dest} created")))
+  ([c dest]
+   (run c #(directory dest))))
 
 (defn symlink
   "Symlink resource"
@@ -98,6 +113,6 @@
    (run c #(run-symlink src target))))
 
 (comment
-  (info (directory "/tmp/2" 777) ::mkdir)
+  (info (directory "/tmp/5") ::directory)
   (info (chmod "foo" "+x") ::chmod)
   (sh "/bin/chmod" mode dest :sudo true :dry true))
