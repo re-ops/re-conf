@@ -185,6 +185,6 @@
 
 (comment
   (initialize)
-  (info (package "git" apt :absent) ::remove)
-  (info (package "git" apt :present) ::add)
+  (info (package "git" :absent) ::remove)
+  (info (package "git") ::add)
   (info (update) ::update))
