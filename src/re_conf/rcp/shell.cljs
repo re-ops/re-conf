@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.cljs.pkg :refer (install)]
+   [re-conf.cljs.pkg :refer (package)]
    [re-conf.cljs.file :refer (chown directory symlink)]
    [re-conf.cljs.facts :refer (home)]
    [re-conf.cljs.git :refer (clone)]
@@ -15,15 +15,15 @@
   [{:keys [user]}]
   (let [home (<< "/home/~{user}/") dest (<< "~{home}/.tmux")]
     (->
-     (install "tmux")
+     (package "tmux")
      (clone "git://github.com/narkisr/.tmux.git")
      (chown user dest)
      (directory (<< "~{dest}/plugins") :present)
      (clone "git://github.com/tmux-plugins/tpm" (<< "~{dest}/plugins/tpm"))
      (symlink (<< "{dest}/.tmux.conf") (<< "~{home}/.tmux.conf")))))
 
-(defn plugins
-  "Setup Tmux plugins"
+(defn tmuxinator
+  "Setup Tmuxinator"
   [{:keys [user]}])
 
 (comment)
