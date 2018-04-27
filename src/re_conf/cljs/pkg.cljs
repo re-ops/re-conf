@@ -1,145 +1,178 @@
 (ns re-conf.cljs.pkg
-  (:refer-clojure :exclude [update key])
+  (:refer-clojure :exclude [update key remove])
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
    [re-conf.cljs.common :refer (run)]
-   [re-conf.cljs.log :refer (info debug error)]
+   [re-conf.cljs.log :refer (info debug error channel?)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]))
 
-(def pipes (atom {:apt (chan 10) :gem (chan 10)}))
+(defprotocol Package
+  (install [this pkg])
+  (uninstall [this pkg])
+  (update- [this])
+  (upgrade- [this]))
 
-(defn- run-remove [pkg]
+(defprotocol Repo
+  (add-ppa [this repo])
+  (rm-ppa [this repo])
+  (key- [this k id]))
+
+(defrecord Apt [pipe]
+  Package
+  (install [this pkg]
+    (info "running install" ::apt)
+    (go
+      (<! (sh "/usr/bin/apt-get" "install" pkg "-y" :sudo true))))
+
+  (uninstall [this pkg]
+    (info "running uninstall" ::apt)
+    (go
+      (<! (sh "/usr/bin/apt-get" "remove" pkg "-y" :sudo true))))
+
+  (update- [this]
+    (go
+      (<! (sh "/usr/bin/apt-get" "update" :sudo true))))
+
+  (upgrade- [this]
+    (go
+      (<! (sh "/usr/bin/apt-get" "upgrade" "-y" :sudo true))))
+
+  Repo
+  (add-ppa [this repo]
+    (go
+      (<! (sh "/usr/bin/add-apt-repository" (<< "ppa:~{repo}") "-y" :sudo true))))
+
+  (rm-ppa [this repo]
+    (go
+      (<! (sh "/usr/bin/add-apt-repository" "--remove" (<< "ppa:~{repo}") "-y" :sudo true))))
+
+  (key- [this server id]
+    (go
+      (let [{:keys [distro platform]} (<! (os))]
+        (if (and (= platform "linux") (= distro "Ubuntu"))
+          (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
+          {:error (<< "cant import apt key under ~{platform} ~{distro}")})))))
+
+(deftype Pkg [pipe]
+  Package
+  (install [this pkg]
+    (go
+      (<! (sh "/usr/sbin/pkg" "install" "-y" pkg :sudo true))))
+
+  (uninstall [this pkg]
+    (go
+      (<! (sh "/usr/sbin/pkg" "remove" "-y" pkg :sudo true))))
+
+  (update- [this]
+    (go
+      (<! (sh "/usr/sbin/pkg" "update" :sudo true))))
+
+  (upgrade- [this]
+    (go
+      (<! (sh "/usr/sbin/pkg" "-y" "upgrade" :sudo true)))))
+
+(defn installed? [pkg]
   (go
     (let [{:keys [platform]} (<! (os))]
       (case platform
-        "linux" (<! (sh "/usr/bin/apt-get" "remove" pkg "-y" :sudo true))
-        "freebsd" (<! (sh "pkg" "remove" "-y" pkg :sudo true))
+        "linux" (<! (sh "/usr/bin/dpkg" "-s" pkg))
         :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+; pipes
 
-(defn- run-pkg [[pkg state]]
-  (go
-    (let [{:keys [platform]} (<! (os))]
-      (case platform
-        "linux" (<! (sh "/usr/bin/apt-get" (name state) pkg "-y" :sudo true))
-        "freebsd" (<! (sh "pkg" (name state) "-y" pkg :sudo true))
-        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+(def pipes (atom {:os (chan 10) :gem (chan 10)}))
 
-(defn- run-update []
-  (go
-    (let [{:keys [platform]} (<! (os))]
-      (case platform
-        "linux" (<! (sh "/usr/bin/apt-get" "update" :sudo true))
-        "freebsd" (<! (sh "pkg" "update" :sudo true))
-        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+(defn os-pipe
+  "OS packages pipe"
+  []
+  (:os @pipes))
 
-(defn- run-upgrade []
-  (go
-    (let [{:keys [platform]} (<! (os))]
-      (case platform
-        "linux" (<! (sh "/usr/bin/apt-get" "upgrade" "-y" :sudo true))
-        "freebsd" (<! (sh "pkg" "upgrade" "-y" :sudo true))
-        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+(defn gem-pipe
+  "gem pipe"
+  []
+  (:gem @pipes))
 
-(defn- run-ppa
-  "Add a ppa repository"
-  [[repo state]]
-  (go
-    (let [{:keys [distro platform]} (<! (os)) flags (if (= state :remove) "--remove" "")]
-      (if (and (= platform "linux") (= distro "Ubuntu"))
-        (<! (sh "/usr/bin/add-apt-repository" flags (<< "ppa:~{repo}") "-y" :sudo true))
-        {:error (<< "ppa isn't supported under ~{platform} ~{distro}")}))))
+; providers
+(defn apt []
+  (Apt. (os-pipe)))
 
-(defn- run-key
-  "Add an apt key"
-  [[server id]]
-  (go
-    (let [{:keys [distro platform]} (<! (os))]
-      (if (and (= platform "linux") (= distro "Ubuntu"))
-        (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
-        {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
+(defn pkg []
+  (Pkg. (os-pipe)))
 
+; consumers
 (defn- gem-consumer [c]
   (go-loop []
-    (let [[action args resp] (<! c)]
-      (debug (<< "running gem ~{:action} ~{args}") ::gem-consumer)
-      (>! resp (<! (run-pkg args))))
+    (let [[f provider args resp] (<! c)]
+      (debug (<< "running gem ~{f} ~{args}") ::gem-consumer)
+      (>! resp (<! (apply f provider args))))
     (recur)))
 
-(defn- apt-consumer [c]
+(defn- pkg-consumer [c]
   (go-loop []
-    (let [[action args resp] (<! c)]
-      (debug (<< "running ~{action} ~{args}") ::apt-consumer)
-      (case action
-        :pkg (>! resp (<! (run-pkg args)))
-        :ppa  (>! resp (<! (run-ppa args)))
-        :update  (>! resp (<! (run-update)))
-        :upgrade  (>! resp (<! (run-upgrade)))
-        :key  (>! resp (<! (run-key args)))))
+    (let [[f provider args resp] (<! c)
+          result (<! (apply f provider args))]
+      (>! resp result))
     (recur)))
 
-(defn- call [pipe action args]
+(defn- call [f provider & args]
   (go
     (let [resp (chan)]
-      (>! pipe [action args resp])
+      (>! (:pipe provider) [f provider args resp])
       (<! resp))))
 
-(defn- apt-call [action args]
-  (call (@pipes :apt) action args))
-
-(defn- gem-call [action args]
-  (call (@pipes :gem) action args))
-
-(def states {:present :install
-             :absent :remove})
-
-(defn gem
-  "Install a Ruby gem"
-  ([pkg]
-   (gem pkg :present))
-  ([pkg state]
-   (gem-call :gem [pkg state]))
-  ([c pkg state]
-   (run c #(gem pkg state))))
+(defn into-spec [m args]
+  (if (empty? args)
+    m
+    (let [a (first args)]
+      (cond
+        (string? a) (into-spec (assoc m :pkg a) (rest args))
+        (channel? a) (into-spec (assoc m :ch a) (rest args))
+        (keyword? a) (into-spec (assoc m :state a) (rest args))
+        (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
 
 (defn package
-  "Install a package"
-  ([pkg]
-   (package pkg :present))
-  ([pkg state]
-   (apt-call :pkg [pkg state]))
-  ([c pkg state]
-   (run c #(package pkg state))))
+  "Package resource with optional provider and state parameters"
+  ([& args]
+   (let [{:keys [ch pkg state provider] :or {provider (apt) state :present}} (into-spec {} args)
+         fns {:present install :absent uninstall}]
+     (if ch
+       (run ch #(call (fns state) provider pkg))
+       (call (fns state) provider pkg)))))
 
 (defn update
-  "Update package manager metadata"
+  "Update packages"
   ([]
-   (apt-call :update nil))
-  ([c]
-   (run c #(update))))
+   (update (apt)))
+  ([provider]
+   (call update- provider))
+  ([c provider]
+   (run c #(update provider))))
 
 (defn upgrade
-  "Upgrade all installed packages"
+  "Upgrade packages"
   ([]
-   (apt-call :upgrade nil))
-  ([c]
-   (run c #(upgrade))))
+   (upgrade (apt)))
+  ([provider]
+   (call upgrade- provider))
+  ([c provider]
+   (run c #(upgrade provider))))
 
 (defn ppa
   "Add an Ubuntu PPA repository"
   ([repo]
    (ppa repo :present))
   ([repo state]
-   (apt-call :ppa [repo state]))
+   (let [fns {:present add-ppa :absent rm-ppa}]
+     (call (fns state) (apt) repo)))
   ([c repo state]
    (run c #(ppa repo state))))
 
 (defn key
   "Import a gpg apt key"
   ([server id]
-   (apt-call :key [server id]))
+   (call key- (apt) [server id]))
   ([c server id]
    (run c #(key server id))))
 
@@ -147,12 +180,11 @@
   "Setup the serializing go loop for package management access"
   []
   (go
-    (apt-consumer (@pipes :apt))
-    (gem-consumer (@pipes :gem))))
+    (pkg-consumer (os-pipe))
+    (gem-consumer (gem-pipe))))
 
 (comment
-  (info (key "keyserver.ubuntu.com" "42ED3C30B8C9F76BC85AC1EC8B095396E29035F0") ::key)
   (initialize)
-  (info (package "zsh" :present) ::install)
-  (info (update) ::update)
-  (info (upgrade) ::update))
+  (info (package "git" apt :absent) ::remove)
+  (info (package "git" apt :present) ::add)
+  (info (update) ::update))
