@@ -9,14 +9,22 @@
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.shell :refer (sh)]))
 
-(def serialize (atom (chan 10)))
+(def pipes (atom {:apt (chan 10) :gem (chan 10)}))
 
-(defn- run-install [pkg]
+(defn- run-remove [pkg]
   (go
     (let [{:keys [platform]} (<! (os))]
       (case platform
-        "linux" (<! (sh "/usr/bin/apt-get" "install" pkg "-y" :sudo true))
-        "freebsd" (<! (sh "pkg" "install" "-y" pkg :sudo true))
+        "linux" (<! (sh "/usr/bin/apt-get" "remove" pkg "-y" :sudo true))
+        "freebsd" (<! (sh "pkg" "remove" "-y" pkg :sudo true))
+        :default  {:error (<< "No matching package provider found for ~{platform}")}))))
+
+(defn- run-pkg [[pkg state]]
+  (go
+    (let [{:keys [platform]} (<! (os))]
+      (case platform
+        "linux" (<! (sh "/usr/bin/apt-get" (name state) pkg "-y" :sudo true))
+        "freebsd" (<! (sh "pkg" (name state) "-y" pkg :sudo true))
         :default  {:error (<< "No matching package provider found for ~{platform}")}))))
 
 (defn- run-update []
@@ -37,11 +45,11 @@
 
 (defn- run-ppa
   "Add a ppa repository"
-  [repo]
+  [[repo state]]
   (go
-    (let [{:keys [distro platform]} (<! (os))]
+    (let [{:keys [distro platform]} (<! (os)) flags (if (= state :remove) "--remove" "")]
       (if (and (= platform "linux") (= distro "Ubuntu"))
-        (<! (sh "/usr/bin/add-apt-repository" (<< "ppa:~{repo}") "-y" :sudo true))
+        (<! (sh "/usr/bin/add-apt-repository" flags (<< "ppa:~{repo}") "-y" :sudo true))
         {:error (<< "ppa isn't supported under ~{platform} ~{distro}")}))))
 
 (defn- run-key
@@ -53,68 +61,98 @@
         (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
         {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
 
-(defn pkg-consumer [c]
+(defn- gem-consumer [c]
   (go-loop []
     (let [[action args resp] (<! c)]
-      (debug (<< "running ~{action} ~{args}") ::pkg-consumer)
+      (debug (<< "running gem ~{:action} ~{args}") ::gem-consumer)
+      (>! resp (<! (run-pkg args))))
+    (recur)))
+
+(defn- apt-consumer [c]
+  (go-loop []
+    (let [[action args resp] (<! c)]
+      (debug (<< "running ~{action} ~{args}") ::apt-consumer)
       (case action
-        :install (>! resp (<! (run-install args)))
+        :pkg (>! resp (<! (run-pkg args)))
+        :ppa  (>! resp (<! (run-ppa args)))
         :update  (>! resp (<! (run-update)))
         :upgrade  (>! resp (<! (run-upgrade)))
-        :ppa  (>! resp (<! (run-ppa args)))
         :key  (>! resp (<! (run-key args)))))
     (recur)))
 
-(defn- call [action args]
+(defn- call [pipe action args]
   (go
     (let [resp (chan)]
-      (>! @serialize [action args resp])
+      (>! pipe [action args resp])
       (<! resp))))
 
-(defn install
+(defn- apt-call [action args]
+  (call (@pipes :apt) action args))
+
+(defn- gem-call [action args]
+  (call (@pipes :gem) action args))
+
+(def states {:present :install
+             :absent :remove})
+
+(defn gem
+  "Install a Ruby gem"
+  ([pkg]
+   (gem pkg :present))
+  ([pkg state]
+   (gem-call :gem [pkg state]))
+  ([c pkg state]
+   (run c #(gem pkg state))))
+
+(defn package
   "Install a package"
   ([pkg]
-   (call :install pkg))
-  ([c pkg]
-   (run c #(call :install pkg))))
+   (package pkg :present))
+  ([pkg state]
+   (apt-call :pkg [pkg state]))
+  ([c pkg state]
+   (run c #(package pkg state))))
 
 (defn update
   "Update package manager metadata"
   ([]
-   (call :update nil))
+   (apt-call :update nil))
   ([c]
-   (run c #(call :update nil))))
+   (run c #(update))))
 
 (defn upgrade
   "Upgrade all installed packages"
   ([]
-   (call :upgrade nil))
+   (apt-call :upgrade nil))
   ([c]
-   (run c #(call :upgrade nil))))
+   (run c #(upgrade))))
 
 (defn ppa
   "Add an Ubuntu PPA repository"
   ([repo]
-   (call :ppa repo))
-  ([c repo]
-   (run c #(call :ppa repo))))
+   (ppa repo :present))
+  ([repo state]
+   (apt-call :ppa [repo state]))
+  ([c repo state]
+   (run c #(ppa repo state))))
 
 (defn key
   "Import a gpg apt key"
   ([server id]
-   (call :key [server id]))
+   (apt-call :key [server id]))
   ([c server id]
-   (run c #(call :key [server id]))))
+   (run c #(key server id))))
 
 (defn initialize
   "Setup the serializing go loop for package management access"
   []
   (go
-    (pkg-consumer @serialize)))
+    (apt-consumer (@pipes :apt))
+    (gem-consumer (@pipes :gem))))
 
 (comment
   (info (key "keyserver.ubuntu.com" "42ED3C30B8C9F76BC85AC1EC8B095396E29035F0") ::key)
   (initialize)
-  (info (install "zsh") ::install)
+  (info (package "zsh" :present) ::install)
   (info (update) ::update)
   (info (upgrade) ::update))
