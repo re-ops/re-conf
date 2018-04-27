@@ -2,6 +2,7 @@
   "Backup utilities recipes"
   (:require
    [re-conf.cljs.download :refer (download checksum)]
+   [re-conf.cljs.archive :refer (bzip2)]
    [re-conf.cljs.shell :refer (exec)]
    [re-conf.cljs.output :refer (summary)]))
 
@@ -14,5 +15,5 @@
     (->
      (download url dest)
      (checksum dest sha :sha256)
-     (exec "bzip2" "-f" "-d" dest)
+     (bzip2 dest)
      (summary "installing restic done"))))
