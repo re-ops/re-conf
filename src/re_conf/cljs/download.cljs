@@ -53,11 +53,11 @@
 ; resources
 
 (defn checksum
-  "Checksum a file and check expected value"
+  "Checksum a file and validate expected value"
   ([file e k]
    (checksum nil file e k))
   ([c file e k]
-   (run c #(run-checkum file e k))))
+   (run c #(checksum file e k))))
 
 (defn download
   "Download file resource"
