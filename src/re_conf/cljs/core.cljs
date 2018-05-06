@@ -2,7 +2,6 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.rcp.shell]
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.pkg :as p :refer (initialize)]
@@ -43,15 +42,6 @@
       (case (arg-count f)
         0 (.call f)
         1 (.call f env)))))
-
-(defn -main [& args]
-  (assert-node-major-version)
-  (take! (initialize)
-         (fn [r]
-           (info "Started re-conf" ::main)
-           #_(invoke re-conf.rcp.basic))))
-
-(set! *main-cli-fn* -main)
 
 (comment
   (initialize)
