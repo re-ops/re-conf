@@ -32,4 +32,4 @@
   ([repo dest]
    (run-clone repo dest))
   ([c repo dest]
-   (run c #(run-clone repo dest))))
+   (run c #(clone repo dest))))
