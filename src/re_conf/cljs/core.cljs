@@ -37,11 +37,11 @@
   "Invoking all public fn in ns concurrently"
   [n env]
   (doseq [[k f] (fns n)]
-    (debug (<< "invoking ~{k}") ::invoke)
+    (debug (<< "invoking! ~{k} ~{env} ~(arg-count f)") ::invoke)
     (go
       (case (arg-count f)
-        0 (.call f)
-        1 (.call f env)))))
+         0 (f)
+         1 (f env)))))
 
 (comment
   (initialize)
