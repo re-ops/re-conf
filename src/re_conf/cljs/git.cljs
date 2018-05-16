@@ -25,9 +25,9 @@
         :default  {:error (<< "No matching git binary path found for ~{platform}")}))))
 
 (defn- repo-exists?
-   [repo path]
-   (when (.existsSync fs path)
-     (includes? (io/slurp (<< "~{path}/.git/config")) repo)))
+  [repo path]
+  (when (.existsSync fs path)
+    (includes? (io/slurp (<< "~{path}/.git/config")) repo)))
 
 (defn run-pull
   "Pull implementation"
@@ -36,8 +36,7 @@
     (if (repo-exists? repo dest)
       (let [git (<! (binary))]
         (<! (sh git (<< "--git-dir=~{dest}.git") "pull")))
-      (debug (<< "Skipping pull ~{repo} is missing under ~{dest}") ::git-clone)
-      )))
+      (debug (<< "Skipping pull ~{repo} is missing under ~{dest}") ::git-clone))))
 
 (defn run-clone
   "Clone implementation"
@@ -46,8 +45,7 @@
     (if-not (repo-exists? repo dest)
       (let [git (<! (binary))]
         (<! (sh git "clone" repo dest)))
-      (debug (<< "Skipping clone ~{repo} exists under ~{dest}") ::git-clone)
-      )))
+      (debug (<< "Skipping clone ~{repo} exists under ~{dest}") ::git-clone))))
 
 (defn clone
   "Clone a git repo resource"

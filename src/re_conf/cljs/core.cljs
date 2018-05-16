@@ -40,8 +40,8 @@
     (debug (<< "invoking! ~{k} ~{env} ~(arg-count f)") ::invoke)
     (go
       (case (arg-count f)
-         0 (f)
-         1 (f env)))))
+        0 (f)
+        1 (f env)))))
 
 (comment
   (initialize)
