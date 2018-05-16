@@ -50,7 +50,7 @@
 
   :cljsbuild {
     :builds [{:id "dev"
-              :source-paths ["src"]
+              :source-paths ["src" "re-base/src"]
               :figwheel true
               :compiler {
                 :main re-conf.cljs.core
