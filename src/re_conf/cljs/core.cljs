@@ -2,6 +2,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-base.rcp.shell]
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.pkg :as p :refer (initialize)]
@@ -44,5 +45,6 @@
         1 (f env)))))
 
 (comment
+  (invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
   (initialize)
   (info (os :platform) ::os))
