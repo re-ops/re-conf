@@ -29,20 +29,36 @@
    (when (.existsSync fs path)
      (includes? (io/slurp (<< "~{path}/.git/config")) repo)))
 
+(defn run-pull
+  "Pull implementation"
+  [repo dest]
+  (go
+    (if (repo-exists? repo dest)
+      (let [git (<! (binary))]
+        (<! (sh git (<< "--git-dir=~{dest}.git") "pull")))
+      (debug (<< "Skipping pull ~{repo} is missing under ~{dest}") ::git-clone)
+      )))
+
 (defn run-clone
   "Clone implementation"
   [repo dest]
   (go
-    (let [git (<! (binary))]
-      (<! (sh git "clone" repo dest)))))
+    (if-not (repo-exists? repo dest)
+      (let [git (<! (binary))]
+        (<! (sh git "clone" repo dest)))
+      (debug (<< "Skipping clone ~{repo} exists under ~{dest}") ::git-clone)
+      )))
 
 (defn clone
-  "Clone a git repo"
+  "Clone a git repo resource"
   ([repo dest]
    (run-clone repo dest))
   ([c repo dest]
    (run c #(clone repo dest))))
 
-(comment
-  (repo-exists? "https://github.com/pkpkpk/cljs-node-io.git" "/home/re-ops/cljs-node-io")
-  )
+(defn pull
+  "Pull latest changes from a git repo resource"
+  ([repo dest]
+   (run-pull repo dest))
+  ([c repo dest]
+   (run c #(pull repo dest))))
