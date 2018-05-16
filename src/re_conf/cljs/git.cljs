@@ -45,7 +45,7 @@
     (if-not (repo-exists? repo dest)
       (let [git (<! (binary))]
         (<! (sh git "clone" repo dest)))
-       {:ok (<< "Skipping clone ~{repo} exists under ~{dest}")})))
+      {:ok (<< "Skipping clone ~{repo} exists under ~{dest}")})))
 
 (defn clone
   "Clone a git repo resource"
