@@ -36,7 +36,7 @@
     (if (repo-exists? repo dest)
       (let [git (<! (binary))]
         (<! (sh git (<< "--git-dir=~{dest}.git") "pull")))
-      (debug (<< "Skipping pull ~{repo} is missing under ~{dest}") ::git-clone))))
+      {:ok (<< "Skipping pull ~{repo} is missing under ~{dest}")})))
 
 (defn run-clone
   "Clone implementation"
@@ -45,7 +45,7 @@
     (if-not (repo-exists? repo dest)
       (let [git (<! (binary))]
         (<! (sh git "clone" repo dest)))
-      (debug (<< "Skipping clone ~{repo} exists under ~{dest}") ::git-clone))))
+       {:ok (<< "Skipping clone ~{repo} exists under ~{dest}")})))
 
 (defn clone
   "Clone a git repo resource"
