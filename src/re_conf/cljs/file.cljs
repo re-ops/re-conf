@@ -82,7 +82,13 @@
           (<! (fs/armdir d))
           (<! (fs/arm-r d)))))))
 
-(def directory-states {:present fs/amkdir
+(defn mkdir [d]
+  (go
+    (if-not (.existsSync nfs d)
+      (<! (fs/amkdir d))
+      {:ok (<< "folder ~{d} exists, skipping mkdir")})))
+
+(def directory-states {:present mkdir
                        :absent rmdir})
 
 (defn directory
