@@ -1,5 +1,7 @@
 (ns re-conf.cljs.shell
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros
+   [clojure.core.strint :refer (<<)]
+   [cljs.core.async.macros :refer [go]])
   (:require
    [re-conf.cljs.log :refer (channel? info debug error)]
    [cuerdas.core :as str]
@@ -59,6 +61,15 @@
   (if (channel? a)
     (run a  #(apply sh args))
     (run nil #(apply sh (conj args a)))))
+
+(defn unless
+  "Run shell only if f returns :ok"
+  [c & args]
+  (go
+    (let [{:keys [ok error]} (<! c)]
+      (if ok
+        (<! (exec args))
+        {:ok (<< "skipping due to ~{error}")}))))
 
 (comment
   (info (sh "ls" "/foo" :sudo true) ::take))
