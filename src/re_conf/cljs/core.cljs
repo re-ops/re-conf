@@ -2,7 +2,6 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-base.rcp.shell]
    [cuerdas.core :as str]
    [re-conf.cljs.facts :refer (os)]
    [re-conf.cljs.pkg :as p :refer (initialize)]
@@ -38,7 +37,7 @@
   "Invoking all public fn in ns concurrently"
   [n env]
   (doseq [[k f] (fns n)]
-    (debug (<< "invoking! ~{k} ~{env} ~(arg-count f)") ::invoke)
+    (debug (<< "invoking ~{k}") ::invoke)
     (go
       (case (arg-count f)
         0 (f)
