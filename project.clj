@@ -1,4 +1,4 @@
-(defproject re-conf "0.1.0"
+(defproject re-conf "0.1.1"
   :description "Portable configuration management language"
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
