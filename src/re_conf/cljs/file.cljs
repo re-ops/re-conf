@@ -3,15 +3,16 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [cljs-node-io.fs :as fs]
+   [clojure.string :refer (includes?)]
    [re-conf.cljs.common :refer (run obj->clj)]
    [re-conf.cljs.shell :refer (sh)]
    [re-conf.cljs.log :refer (info)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]
+   [cljs-node-io.fs :as io-fs]
    [cljstache.core :refer [render]]))
 
-(def nfs (js/require "fs"))
+(def fs (js/require "fs"))
 
 ; utility functions
 
@@ -28,8 +29,8 @@
   "Get file stats info"
   [dest]
   (go
-    (let [[err stat] (<! (fs/astat dest))
-          prms (fs/permissions stat)]
+    (let [[err stat] (<! (io-fs/astat dest))
+          prms (io-fs/permissions stat)]
       (if (nil? err)
         {:ok (assoc (obj->clj stat) :mode prms)}
         {:error err}))))
@@ -62,31 +63,41 @@
 (defn chown
   "Change file/directory owner resource"
   ([dest uid gid]
-   (translate (fs/achown dest uid gid) (<< "~{dest} uid:gid is set to ~{uid}:~{gid}")))
+   (translate (io-fs/achown dest uid gid) (<< "~{dest} uid:gid is set to ~{uid}:~{gid}")))
   ([c dest uid gid]
    (run c #(chown dest uid gid))))
 
 (defn chmod
   "Change file/directory mode resource"
   ([dest mode]
-   (translate (fs/achmod dest mode) (<< "~{dest} mode is set to ~{mode}")))
+   (translate (io-fs/achmod dest mode) (<< "~{dest} mode is set to ~{mode}")))
   ([c dest mode]
    (run c #(chmod dest mode))))
 
+(defn check-dir
+  "Dir check spec"
+  [d]
+  (go
+    (if-not (<! (io-fs/adir? d))
+      {:error (<< "directory ~{d} is missing") :exists false}
+      {:ok (<< "directory ~{d} exists") :exists true})))
+
 (defn rmdir [d]
   (go
-    (let [[err v]  (<! (fs/areaddir d))]
-      (if err
-        [err]
-        (if (empty? v)
-          (<! (fs/armdir d))
-          (<! (fs/arm-r d)))))))
+    (if-not (:exists (<! (check-dir d)))
+      [nil (<< "folder ~{d} missing, skipping rmdir")]
+      (let [[err v]  (<! (io-fs/areaddir d))]
+        (if err
+          [err]
+          (if (empty? v)
+            (<! (io-fs/armdir d))
+            (<! (io-fs/arm-r d))))))))
 
 (defn mkdir [d]
   (go
-    (if-not (.existsSync nfs d)
-      (<! (fs/amkdir d))
-      {:ok (<< "folder ~{d} exists, skipping mkdir")})))
+    (if-not (:exists (<! (check-dir d)))
+      (<! (io-fs/amkdir d))
+      [nil (<< "folder ~{d} exists, skipping mkdir")])))
 
 (def directory-states {:present mkdir
                        :absent rmdir})
@@ -96,26 +107,55 @@
   ([dest]
    (directory dest :present))
   ([dest state]
-   (translate ((directory-states state) dest) (<< "Directory ~{dest} state is ~(name state)")))
+   (translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))
   ([c dest state]
    (run c #(directory dest state))))
 
-(def symlink-states {:present fs/asymlink
-                     :absent fs/arm})
+(defn check-link
+  "link check function"
+  [src target]
+  (go
+    (if (<! (io-fs/asymlink? target))
+      (let [[_ actual] (<! (io-fs/areadlink target))]
+        (if (= actual src)
+          {:ok (<< "link ~{src} -> ~{target} exists") :exists true}
+          {:error (<< "~{src} points to  -> ~{target} exists") :exists true}))
+      {:error (<< "link missing") :exists false})))
+
+(defn mklink
+  [src target]
+  (go
+    (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
+      (if (not exists)
+        (<! (io-fs/asymlink src target))
+        (if ok
+          [nil ok]
+          [error])))))
+
+(def symlink-states {:present mklink})
 
 (defn symlink
   "Symlink resource"
   ([src target]
    (symlink src target :present))
   ([src target state]
-   (translate ((symlink-states state) src target)
-              (<< "Symlink from ~{src} to ~{target} is ~(name state)")))
+   (translate
+    ((symlink-states state) src target)
+    (<< "Symlink from ~{src} to ~{target} is ~(name state)")))
   ([c src target state]
    (run c #(symlink src target state))))
 
+(defn contains
+  "Check that a file contains string spec"
+  ([f s]
+   (go
+     (if (includes? (io/slurp f) s)
+       {:ok (<< "~{f} contains ~{s}")}
+       {:error (<< "~{f} does not contain ~{s}")})))
+  ([c f s]
+   (run c #(contains f s))))
+
 (comment
-  (info (stats "/tmp/fo") ::stats)
-  (info (directory "/tmp/fo" :present) ::chmod)
-  (info (symlink "/tmp/fo" "/tmp/bla") ::symlink)
+  (info (io-fs/areadlink "/home/re-ops/.tmux.conf") ::symlink)
   (info (chmod "/tmp/fo" "0777") ::chmod)
   (sh "/bin/chmod" mode dest :sudo true :dry true))
