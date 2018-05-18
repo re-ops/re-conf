@@ -1,4 +1,4 @@
-(ns re-conf.cljs.git
+(ns re-conf.resources.git
   "Git resources"
   (:refer-clojure :exclude [clone])
   (:require-macros
@@ -6,10 +6,10 @@
   (:require
    [clojure.string :refer (includes?)]
    [cljs-node-io.core :as io]
-   [re-conf.cljs.shell :refer (sh)]
-   [re-conf.cljs.facts :refer (os)]
-   [re-conf.cljs.log :refer (info debug error)]
-   [re-conf.cljs.common :refer (run)]
+   [re-conf.resources.shell :refer (sh)]
+   [re-conf.resources.facts :refer (os)]
+   [re-conf.resources.log :refer (info debug error)]
+   [re-conf.resources.common :refer (run)]
    [cljs.core.async :refer [<! go]]))
 
 (def fs (js/require "fs"))

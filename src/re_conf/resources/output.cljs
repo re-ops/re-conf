@@ -1,7 +1,7 @@
-(ns re-conf.cljs.output
+(ns re-conf.resources.output
   (:require
    [cljs.core.match :refer-macros  [match]]
-   [re-conf.cljs.log :refer (info debug error)]
+   [re-conf.resources.log :refer (info debug error)]
    [cljs.core.async :as async :refer [take!]]))
 
 (defn summary

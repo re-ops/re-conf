@@ -1,4 +1,4 @@
-(ns re-conf.cljs.log
+(ns re-conf.resources.log
   "Logging facade"
   (:require-macros
    [clojure.core.strint :refer (<<)])

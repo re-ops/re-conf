@@ -53,7 +53,7 @@
               :source-paths ["src" "re-base/src"]
               :figwheel true
               :compiler {
-                :main re-conf.cljs.core
+                :main re-conf.core
                 :asset-path "target/js/compiled/dev"
                 :output-to "target/js/compiled/re-conf.js"
                 :output-dir "target/js/compiled/dev"

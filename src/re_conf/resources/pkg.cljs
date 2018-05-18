@@ -1,13 +1,13 @@
-(ns re-conf.cljs.pkg
+(ns re-conf.resources.pkg
   (:refer-clojure :exclude [update key remove])
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.cljs.common :refer (run)]
-   [re-conf.cljs.log :refer (info debug error channel?)]
+   [re-conf.resources.common :refer (run)]
+   [re-conf.resources.log :refer (info debug error channel?)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
-   [re-conf.cljs.facts :refer (os)]
-   [re-conf.cljs.shell :refer (sh)]))
+   [re-conf.resources.facts :refer (os)]
+   [re-conf.resources.shell :refer (sh)]))
 
 (defprotocol Package
   (install [this pkg])

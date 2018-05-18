@@ -1,6 +1,6 @@
-(ns re-conf.cljs.facts
+(ns re-conf.resources.facts
   (:require
-   [re-conf.cljs.log :refer (error info)]
+   [re-conf.resources.log :refer (error info)]
    [cljs.core.async :as async :refer [<! put! chan]]))
 
 (def si (js/require "systeminformation"))

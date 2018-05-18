@@ -1,9 +1,9 @@
-(ns re-conf.cljs.archive
+(ns re-conf.resources.archive
   "Archive extraction"
   (:require
-   [re-conf.cljs.common :refer (run)]
-   [re-conf.cljs.pkg :refer (package)]
-   [re-conf.cljs.shell :refer (exec)]))
+   [re-conf.resources.common :refer (run)]
+   [re-conf.resources.pkg :refer (package)]
+   [re-conf.resources.shell :refer (exec)]))
 
 (def fs (js/require "fs"))
 

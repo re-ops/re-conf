@@ -1,7 +1,7 @@
-(ns re-conf.cljs.common
+(ns re-conf.resources.common
   "Common resource functions"
   (:require
-   [re-conf.cljs.log :refer (info debug error)]
+   [re-conf.resources.log :refer (info debug error)]
    [cljs.core.async :as async :refer [<! go]]))
 
 (def process (js/require "process"))

@@ -1,11 +1,11 @@
-(ns re-conf.cljs.core
+(ns re-conf.core
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
    [cuerdas.core :as str]
-   [re-conf.cljs.facts :refer (os)]
-   [re-conf.cljs.pkg :as p :refer (initialize)]
-   [re-conf.cljs.log :refer (info debug error)]
+   [re-conf.resources.facts :refer (os)]
+   [re-conf.resources.pkg :as p :refer (initialize)]
+   [re-conf.resources.log :refer (info debug error)]
    [cljs.core.async :as async :refer [take! go]]
    [cljs.nodejs :as nodejs]))
 
@@ -43,7 +43,9 @@
         0 (f)
         1 (f env)))))
 
+(require 're-base.rcp.shell)
+(invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
+
 (comment
-  (invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
   (initialize)
   (info (os :platform) ::os))

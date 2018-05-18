@@ -1,12 +1,13 @@
-(ns re-conf.cljs.file
+(ns re-conf.resources.file
   "File resources"
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
    [clojure.string :refer (includes?)]
-   [re-conf.cljs.common :refer (run obj->clj)]
-   [re-conf.cljs.shell :refer (sh)]
-   [re-conf.cljs.log :refer (info)]
+   [re-conf.resources.common :refer (run obj->clj)]
+   [re-conf.resources.shell :refer (sh)]
+   [re-conf.resources.log :refer (info)]
+   [re-conf.spec.file :refer (check-link check-dir)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]
@@ -74,13 +75,7 @@
   ([c dest mode]
    (run c #(chmod dest mode))))
 
-(defn check-dir
-  "Dir check spec"
-  [d]
-  (go
-    (if-not (<! (io-fs/adir? d))
-      {:error (<< "directory ~{d} is missing") :exists false}
-      {:ok (<< "directory ~{d} exists") :exists true})))
+
 
 (defn rmdir [d]
   (go
@@ -111,16 +106,7 @@
   ([c dest state]
    (run c #(directory dest state))))
 
-(defn check-link
-  "link check function"
-  [src target]
-  (go
-    (if (<! (io-fs/asymlink? target))
-      (let [[_ actual] (<! (io-fs/areadlink target))]
-        (if (= actual src)
-          {:ok (<< "link ~{src} -> ~{target} exists") :exists true}
-          {:error (<< "~{src} points to  -> ~{target} exists") :exists true}))
-      {:error (<< "link missing") :exists false})))
+
 
 (defn mklink
   [src target]

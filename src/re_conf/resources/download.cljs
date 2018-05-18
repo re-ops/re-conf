@@ -1,8 +1,8 @@
-(ns re-conf.cljs.download
+(ns re-conf.resources.download
   "nodejs native file download"
   (:require
-   [re-conf.cljs.common :refer (run)]
-   [re-conf.cljs.log :refer (info error)]
+   [re-conf.resources.common :refer (run)]
+   [re-conf.resources.log :refer (info error)]
    [cljs.core.async :as async :refer [<! >! chan go-loop go take! put!]]
    [cljs.nodejs :as nodejs]))
 

@@ -1,12 +1,12 @@
-(ns re-conf.cljs.shell
+(ns re-conf.resources.shell
   (:require-macros
    [clojure.core.strint :refer (<<)]
    [cljs.core.async.macros :refer [go]])
   (:require
-   [re-conf.cljs.log :refer (channel? info debug error)]
+   [re-conf.resources.log :refer (channel? info debug error)]
    [cuerdas.core :as str]
    [cljs.nodejs :as nodejs]
-   [re-conf.cljs.common :refer (run)]
+   [re-conf.resources.common :refer (run)]
    [cljs.core.match :refer-macros  [match]]
    [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
