@@ -19,7 +19,7 @@
 
 (def settings
   (let [f (clj->js {"filename" "re-conf.log" "colorize" true})]
-    {:level "debug"
+    {:level "info"
      :format (winston.format.combine (winston.format.timestamp) (winston.format.json))
      :transports [(winston.transports.File. f)]}))
 
