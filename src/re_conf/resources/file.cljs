@@ -4,6 +4,7 @@
    [clojure.core.strint :refer (<<)])
   (:require
    [clojure.string :refer (includes?)]
+   [re-conf.resources.log :refer (info debug error)]
    [re-conf.resources.common :refer (run obj->clj)]
    [re-conf.resources.shell :refer (sh)]
    [re-conf.resources.log :refer (info)]
@@ -106,13 +107,11 @@
   ([c dest state]
    (run c #(directory dest state))))
 
-
-
 (defn mklink
   [src target]
   (go
     (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
-      (if (not exists)
+      (if-not exists
         (<! (io-fs/asymlink src target))
         (if ok
           [nil ok]
