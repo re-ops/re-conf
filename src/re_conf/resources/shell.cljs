@@ -8,7 +8,7 @@
    [cljs.nodejs :as nodejs]
    [re-conf.resources.common :refer (run)]
    [cljs.core.match :refer-macros  [match]]
-   [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
+   [cljs.core.async :as async :refer [put! <! >! chan alts! timeout take!]]))
 
 (def spawn (.-spawn (js/require "child_process")))
 
@@ -63,12 +63,12 @@
     (run nil #(apply sh (conj args a)))))
 
 (defn unless
-  "Run shell only if f returns :ok"
+  "Run shell only if c returns :ok"
   [c & args]
   (go
-    (let [{:keys [ok error]} (<! c)]
-      (if ok
-        (<! (exec args))
+    (let [{:keys [ok error] :as m} (<! c)]
+      (if-not ok
+        (<! (apply exec args))
         {:ok (<< "skipping due to ~{error}")}))))
 
 (comment
