@@ -76,8 +76,6 @@
   ([c dest mode]
    (run c #(chmod dest mode))))
 
-
-
 (defn rmdir [d]
   (go
     (if-not (:exists (<! (check-dir d)))

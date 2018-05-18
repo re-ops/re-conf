@@ -3,9 +3,8 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-    [cljs.core.async :as async :refer [<! go]]
-    [cljs-node-io.fs :as io-fs]
-    ))
+   [cljs.core.async :as async :refer [<! go]]
+   [cljs-node-io.fs :as io-fs]))
 
 (defn check-dir
   "Dir check spec"
