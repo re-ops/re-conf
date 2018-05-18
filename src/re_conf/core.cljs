@@ -33,6 +33,11 @@
   [n]
   (js->clj (js/Object n)))
 
+(defn- home
+  "Add home to the env"
+  [{:keys [user] :as m}]
+  (assoc m :home (<< "/home/~{user}")))
+
 (defn invoke
   "Invoking all public fn in ns concurrently"
   [n env]
@@ -41,11 +46,11 @@
     (go
       (case (arg-count f)
         0 (f)
-        1 (f env)))))
+        1 (f (home env))))))
 
 (require 're-base.rcp.shell)
-(invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
 
 (comment
   (initialize)
+  (invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
   (info (os :platform) ::os))
