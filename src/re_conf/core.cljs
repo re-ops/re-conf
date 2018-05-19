@@ -48,9 +48,8 @@
         0 (f)
         1 (f (home env))))))
 
-(require 're-base.rcp.shell)
-
 (comment
   (initialize)
+  (require 're-base.rcp.shell)
   (invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
   (info (os :platform) ::os))
