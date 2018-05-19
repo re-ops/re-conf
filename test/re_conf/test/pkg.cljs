@@ -1,7 +1,7 @@
 (ns re-conf.test.pkg
   (:require
    [cljs.core.async :refer [<! go]]
-   [re-conf.cljs.pkg :refer (package installed? initialize)]
+   [re-conf.resources.pkg :refer (package installed? initialize)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (defn ok?  [m]
