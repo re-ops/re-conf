@@ -23,12 +23,12 @@
 (defrecord Apt [pipe]
   Package
   (install [this pkg]
-    (info "running install" ::apt)
+    (debug "running install" ::apt)
     (go
       (<! (sh "/usr/bin/apt-get" "install" pkg "-y" :sudo true))))
 
   (uninstall [this pkg]
-    (info "running uninstall" ::apt)
+    (debug "running uninstall" ::apt)
     (go
       (<! (sh "/usr/bin/apt-get" "remove" pkg "-y" :sudo true))))
 
