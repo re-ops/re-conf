@@ -99,11 +99,11 @@
 (defn directory
   "Directory resource"
   ([dest]
-   (directory dest :present))
-  ([dest state]
-   (translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))
+   (directory nil dest :present))
+  ([c dest]
+   (directory c dest :present))
   ([c dest state]
-   (run c #(directory dest state))))
+   (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
 
 (defn mklink
   [src target]
