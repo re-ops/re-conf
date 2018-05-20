@@ -41,6 +41,8 @@
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-figwheel "0.5.14"]
             [lein-cljfmt "0.5.7"]
+            [lein-set-version "0.3.0"]
+            [lein-tag "0.1.0"]
             [lein-npm "0.6.2"]]
 
 
@@ -99,7 +101,7 @@
                :themes [:rdash]
                :language :clojurescript
                :source-paths ["src"]
-               :source-uri "https://github.com/re-ops/re-mote/blob/master/{filepath}#L{line}"
+               :source-uri "https://github.com/re-ops/re-conf/blob/master/{filepath}#L{line}"
        }
      }
     }
