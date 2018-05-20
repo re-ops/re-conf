@@ -57,7 +57,7 @@
   ([file e k]
    (checksum nil file e k))
   ([c file e k]
-   (run c #(checksum file e k))))
+   (run c #(run-checkum file e k))))
 
 (defn download
   "Download file resource"
@@ -67,4 +67,4 @@
    (run c #(run-download url dest))))
 
 (comment
-  (info (checkum "/tmp/packer_1.2.2_linux_amd64.zip" "" :sha256) ::debug))
+  (info (checksum "/tmp/restic_0.8.3_linux_amd64.bz2" "123" :sha256) ::debug))
