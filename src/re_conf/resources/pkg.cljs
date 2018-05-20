@@ -16,9 +16,9 @@
   (upgrade- [this]))
 
 (defprotocol Repo
-  (add-ppa [this repo])
-  (rm-ppa [this repo])
-  (key- [this k id]))
+  (add-repo [this repo])
+  (rm-repo [this repo])
+  (key- [this server id]))
 
 (defrecord Apt [pipe]
   Package
@@ -41,13 +41,13 @@
       (<! (sh "/usr/bin/apt-get" "upgrade" "-y" :sudo true))))
 
   Repo
-  (add-ppa [this repo]
+  (add-repo [this repo]
     (go
-      (<! (sh "/usr/bin/add-apt-repository" (<< "ppa:~{repo}") "-y" :sudo true))))
+      (<! (sh "/usr/bin/add-apt-repository" repo "-y" :sudo true))))
 
-  (rm-ppa [this repo]
+  (rm-repo [this repo]
     (go
-      (<! (sh "/usr/bin/add-apt-repository" "--remove" (<< "ppa:~{repo}") "-y" :sudo true))))
+      (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y" :sudo true))))
 
   (key- [this server id]
     (go
@@ -159,20 +159,20 @@
   ([c provider]
    (run c #(upgrade provider))))
 
-(defn ppa
-  "Add an Ubuntu PPA repository"
+(defn repository
+  "Add an Ubuntu repository"
   ([repo]
-   (ppa repo :present))
+   (repository repo :present))
   ([repo state]
-   (let [fns {:present add-ppa :absent rm-ppa}]
+   (let [fns {:present add-repo :absent rm-repo}]
      (call (fns state) (apt) repo)))
   ([c repo state]
-   (run c #(ppa repo state))))
+   (run c #(repository repo state))))
 
 (defn key
   "Import a gpg apt key"
   ([server id]
-   (call key- (apt) [server id]))
+   (call key- (apt) server id))
   ([c server id]
    (run c #(key server id))))
 
