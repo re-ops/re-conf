@@ -144,9 +144,9 @@
 (defn update
   "Update packages"
   ([]
-   (update (apt)))
-  ([provider]
-   (call update- provider))
+   (update nil))
+  ([c]
+   (call update- (apt)))
   ([c provider]
    (run c #(update provider))))
 
