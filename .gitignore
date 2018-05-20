@@ -1,0 +1,14 @@
+.virtualenv
+*.pyc
+target
+node_modules
+figwheel_server.log
+.nrepl-port
+.lein-repl-history
+.cljs_rhino_repl
+server.js
+re-conf.js
+.cljs_node_repl
+package-lock.json
+re-conf.log
+remote
