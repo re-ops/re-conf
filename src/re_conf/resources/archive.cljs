@@ -23,4 +23,9 @@
     (-> c
         (package "bzip2")
         (exec "/bin/bzip2" "-f" "-d" dest))
-    (exec "/bin/bzip2" "-f" "-d" dest)))
+    (exec c "/bin/bzip2" "-f" "-d" dest)))
+
+(defn untar
+  "untar resource"
+  [c src dest]
+  (exec c "/bin/tar" "-xzf" src "-C" dest))
