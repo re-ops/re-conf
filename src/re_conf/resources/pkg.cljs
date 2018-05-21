@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.resources.common :refer (run ok?)]
+   [re-conf.resources.common :refer (run)]
    [re-conf.resources.file :refer (contains)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
