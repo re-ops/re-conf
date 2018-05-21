@@ -5,6 +5,12 @@
 
 (def si (js/require "systeminformation"))
 (def os- (js/require "os"))
+(def process (js/require "process"))
+
+(defn desktop?
+   "Are we running in a Linux desktop?"
+   []
+  (.-DESKTOP-SESSION (.-env process)))
 
 (defn get- [c k]
   (fn [d]
