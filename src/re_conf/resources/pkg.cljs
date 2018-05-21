@@ -3,7 +3,8 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.resources.common :refer (run)]
+   [re-conf.resources.common :refer (run ok?)]
+   [re-conf.resources.file :refer (contains)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
    [re-conf.resources.facts :refer (os)]
@@ -25,50 +26,52 @@
   (install [this pkg]
     (debug "running install" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "install" pkg "-y" :sudo true))))
+      (<! (sh "/usr/bin/apt-get" "install" pkg "-y"))))
 
   (uninstall [this pkg]
     (debug "running uninstall" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "remove" pkg "-y" :sudo true))))
+      (<! (sh "/usr/bin/apt-get" "remove" pkg "-y"))))
 
   (update- [this]
     (go
-      (<! (sh "/usr/bin/apt-get" "update" :sudo true))))
+      (<! (sh "/usr/bin/apt-get" "update"))))
 
   (upgrade- [this]
     (go
-      (<! (sh "/usr/bin/apt-get" "upgrade" "-y" :sudo true))))
+      (<! (sh "/usr/bin/apt-get" "upgrade" "-y"))))
 
   Repo
   (add-repo [this repo]
     (go
-      (<! (sh "/usr/bin/add-apt-repository" repo "-y" :sudo true))))
+      (if (:ok (<! (contains "/etc/apt/sources.list" repo)))
+        {:ok (<< "repo ~{repo} is present, skipping") :skip true}
+        (<! (sh "/usr/bin/add-apt-repository" repo "-y")))))
 
   (rm-repo [this repo]
     (go
-      (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y" :sudo true))))
+      (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))))
 
   (key- [this server id]
     (go
       (let [{:keys [distro platform]} (<! (os))]
         (if (and (= platform "linux") (= distro "Ubuntu"))
-          (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id :sudo true))
+          (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id))
           {:error (<< "cant import apt key under ~{platform} ~{distro}")})))))
 
 (deftype Pkg [pipe]
   Package
   (install [this pkg]
     (go
-      (<! (sh "/usr/sbin/pkg" "install" "-y" pkg :sudo true))))
+      (<! (sh "/usr/sbin/pkg" "install" "-y" pkg))))
 
   (uninstall [this pkg]
     (go
-      (<! (sh "/usr/sbin/pkg" "remove" "-y" pkg :sudo true))))
+      (<! (sh "/usr/sbin/pkg" "remove" "-y" pkg))))
 
   (update- [this]
     (go
-      (<! (sh "/usr/sbin/pkg" "update" :sudo true))))
+      (<! (sh "/usr/sbin/pkg" "update"))))
 
   (upgrade- [this]
     (go
@@ -185,6 +188,7 @@
 
 (comment
   (initialize)
+  (info (repository "deb http://linux.dropbox.com/ubuntu wiley main" :absent) ::absent)
   (info (package "git" :absent) ::remove)
   (info (package "git") ::add)
   (info (update) ::update))
