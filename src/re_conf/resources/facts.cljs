@@ -8,8 +8,8 @@
 (def process (js/require "process"))
 
 (defn desktop?
-   "Are we running in a Linux desktop?"
-   []
+  "Are we running in a Linux desktop?"
+  []
   (not (nil? (.-DESKTOP-SESSION (.-env process)))))
 
 (defn get- [c k]
