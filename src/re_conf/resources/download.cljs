@@ -60,11 +60,24 @@
    (run c #(run-checkum file e k))))
 
 (defn download
-  "Download file resource"
+  "Download file resource, if checksum is provided download will be lazy:
+    (download url dest expected :sha256); download if file missing or checksum mismatch
+    (download url dest); always download
+   "
   ([url dest]
    (download nil url dest))
   ([c url dest]
-   (run c #(run-download url dest))))
+   (run c #(run-download url dest)))
+  ([url dest sum k]
+   (download nil url dest sum k))
+  ([c url dest sum k]
+   (go
+     (if (and (.existsSync fs dest) (:ok (<! (checksum dest sum k))))
+       {:ok "Existing downloaded file match checksum, skipping" :skip true}
+       (<!
+        (-> c
+            (download url dest)
+            (checksum dest sum k)))))))
 
 (comment
   (info (checksum "/tmp/restic_0.8.3_linux_amd64.bz2" "123" :sha256) ::debug))
