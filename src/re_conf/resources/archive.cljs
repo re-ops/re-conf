@@ -22,8 +22,8 @@
   (if-not (.existsSync fs "/usr/bin/bzip2")
     (-> c
         (package "bzip2")
-        (exec "/bin/bzip2" "-f" "-d" dest))
-    (exec c "/bin/bzip2" "-f" "-d" dest)))
+        (exec "/bin/bzip2" "-kf" "-d" dest))
+    (exec c "/bin/bzip2" "-kf" "-d" dest)))
 
 (defn untar
   "untar resource"
