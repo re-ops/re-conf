@@ -10,7 +10,7 @@
 (defn desktop?
    "Are we running in a Linux desktop?"
    []
-  (.-DESKTOP-SESSION (.-env process)))
+  (not (nil? (.-DESKTOP-SESSION (.-env process)))))
 
 (defn get- [c k]
   (fn [d]
