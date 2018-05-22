@@ -128,6 +128,14 @@
   ([c src target state]
    (run c #(symlink src target state))))
 
+(defn append
+  "Append a line to a file"
+  ([dest line]
+   (translate
+    (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}")))
+  ([c dest line]
+   (run c #(append dest line))))
+
 (defn contains
   "Check that a file contains string spec"
   ([f s]
