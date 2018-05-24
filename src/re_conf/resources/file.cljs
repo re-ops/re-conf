@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [clojure.string :refer (includes?)]
+   [clojure.string :refer (includes? split-lines join)]
    [re-conf.resources.log :refer (info debug error)]
    [re-conf.resources.common :refer (run obj->clj)]
    [re-conf.resources.shell :refer (sh)]
@@ -128,14 +128,6 @@
   ([c src target state]
    (run c #(symlink src target state))))
 
-(defn append
-  "Append a line to a file"
-  ([dest line]
-   (translate
-    (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}")))
-  ([c dest line]
-   (run c #(append dest line))))
-
 (defn contains
   "Check that a file contains string spec"
   ([f s]
@@ -146,7 +138,37 @@
   ([c f s]
    (run c #(contains f s))))
 
+(defn rm-line [f dest]
+  (go
+    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+      (if err
+        {:error err}
+        (let [filtered (filter f (split-lines lines))]
+          (<!
+           (translate
+            (io-fs/awriteFile dest (join "\n" filtered) {:override true})
+            (<< "removed ~{filtered} from ~{dest}"))))))))
+
+(defn add-line [dest s]
+  (go
+    (if (:ok (<! (contains dest s)))
+      {:ok " ~{dest} contains ~{s} skipping" :skip true}
+      (<! (translate (io-fs/awriteFile dest s {:append true}) (<< "added ~{s} to ~{dest}"))))))
+
+(def line-states {:present add-line
+                  :absent rm-line})
+
+(defn line
+  "File line resource"
+  ([dest s]
+   (line dest s :present))
+  ([dest s state]
+   ((line-states state) dest s))
+  ([c dest s state]
+   (run c #(line dest line state))))
+
 (comment
+  (info (rm-line "/tmp/foo" (fn [line] (not (= line "1")))) ::rm)
   (info (io-fs/areadlink "/home/re-ops/.tmux.conf") ::symlink)
   (info (chmod "/tmp/fo" "0777") ::chmod)
   (sh "/bin/chmod" mode dest :sudo true :dry true))
