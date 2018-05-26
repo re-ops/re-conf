@@ -138,7 +138,7 @@
   ([c f s]
    (run c #(contains f s))))
 
-(defn rm-line [f dest]
+(defn- rm-line [dest f]
   (go
     (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
       (if err
@@ -149,26 +149,38 @@
             (io-fs/awriteFile dest (join "\n" filtered) {:override true})
             (<< "removed ~{filtered} from ~{dest}"))))))))
 
-(defn add-line [dest s]
+(defn- add-line
+  "Append a line to a file"
+  [file line]
   (go
-    (if (:ok (<! (contains dest s)))
-      {:ok " ~{dest} contains ~{s} skipping" :skip true}
-      (<! (translate (io-fs/awriteFile dest s {:append true}) (<< "added ~{s} to ~{dest}"))))))
+    (if (:ok (<! (contains file line)))
+      {:ok (<< " ~{file} contains ~{line} skipping") :skip true}
+      (<! (translate (io-fs/awriteFile file line {:append true}) (<< "added ~{line} to ~{file}"))))))
+
+(defn line-eq
+  "line equal predicate"
+  [line]
+  (fn [curr] (not (= curr line))))
 
 (def line-states {:present add-line
-                  :absent rm-line})
+                  :absent  rm-line})
 
 (defn line
-  "File line resource"
-  ([dest s]
-   (line dest s :present))
-  ([dest s state]
-   ((line-states state) dest s))
-  ([c dest s state]
-   (run c #(line dest line state))))
+  "File line resource either append or remove lines:
+    (line \"/tmp/foo\" \"bar\"); append line to the file
+    (line \"/tmp/foo\" \"bar\" :present); append explicit
+    (line \"/tmp/foo\" (line-eq \"bar\") :absent); remove lines equal to bar from the file
+    (line \"/tmp/foo\" (fn [curr] (> 5 (.length curr))) :absent); remove lines using a function
+  "
+  ([file l]
+   (line file l :present))
+  ([file l state]
+   ((line-states state) file l))
+  ([c file l state]
+   (run c #(line file l state))))
 
 (comment
-  (info (rm-line "/tmp/foo" (fn [line] (not (= line "1")))) ::rm)
+  (info (line "/tmp/foo" "1") ::append)
+  (info (line "/tmp/foo" (line-eq "1") :absent) ::append)
   (info (io-fs/areadlink "/home/re-ops/.tmux.conf") ::symlink)
-  (info (chmod "/tmp/fo" "0777") ::chmod)
-  (sh "/bin/chmod" mode dest :sudo true :dry true))
+  (info (chmod "/tmp/fo" "0777") ::chmod))
