@@ -3,6 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.resources.download :refer (download)]
    [re-conf.resources.common :refer (run)]
    [re-conf.resources.file :refer (contains)]
    [re-conf.resources.log :refer (info debug error channel?)]
@@ -11,7 +12,7 @@
    [re-conf.resources.shell :refer (sh)]))
 
 (defprotocol Package
-  (install [this pkg])
+  (install- [this pkg])
   (uninstall [this pkg])
   (update- [this])
   (upgrade- [this]))
@@ -25,7 +26,7 @@
 
 (defrecord Apt [pipe]
   Package
-  (install [this pkg]
+  (install- [this pkg]
     (debug "running install" ::apt)
     (go
       (<! (sh "/usr/bin/apt-get" "install" pkg "-y"))))
@@ -72,7 +73,7 @@
 
 (deftype Pkg [pipe]
   Package
-  (install [this pkg]
+  (install- [this pkg]
     (go
       (<! (sh "/usr/sbin/pkg" "install" "-y" pkg))))
 
@@ -150,7 +151,7 @@
   "Package resource with optional provider and state parameters"
   ([& args]
    (let [{:keys [ch pkg state provider] :or {provider (apt) state :present}} (into-spec {} args)
-         fns {:present install :absent uninstall}]
+         fns {:present install- :absent uninstall}]
      (if ch
        (run ch #(call (fns state) provider pkg))
        (call (fns state) provider pkg)))))
@@ -160,9 +161,9 @@
   ([]
    (update nil))
   ([c]
-   (call update- (apt)))
+   (update c (apt)))
   ([c provider]
-   (run c #(update provider))))
+   (run c #(call update- provider))))
 
 (defn upgrade
   "Upgrade packages"
@@ -197,12 +198,20 @@
   ([c server id]
    (run c #(key-server server id))))
 
+(defn install
+  "Add repo, gpg key and install package"
+  [repo url p]
+  (let [dest (<< "/tmp/~{p}.key")]
+    (->
+     (download url dest)
+     (key-file dest)
+     (repository repo :present)
+     (update)
+     (package p))))
+
 (defn initialize
   "Setup the serializing go loop for package management access"
   []
   (go
     (pkg-consumer (os-pipe))
     (gem-consumer (gem-pipe))))
-
-(comment
-  (initialize))
