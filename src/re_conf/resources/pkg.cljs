@@ -19,7 +19,9 @@
 (defprotocol Repo
   (add-repo [this repo])
   (rm-repo [this repo])
-  (key- [this server id]))
+  (key-
+    [this file]
+    [this server id]))
 
 (defrecord Apt [pipe]
   Package
@@ -52,11 +54,20 @@
     (go
       (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))))
 
-  (key- [this server id]
+  (key-
+    [this server id]
     (go
       (let [{:keys [distro platform]} (<! (os))]
         (if (and (= platform "linux") (= distro "Ubuntu"))
           (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id))
+          {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
+
+  (key-
+    [this file]
+    (go
+      (let [{:keys [distro platform]} (<! (os))]
+        (if (and (= platform "linux") (= distro "Ubuntu"))
+          (<! (sh "/usr/bin/apt-key" "add" file))
           {:error (<< "cant import apt key under ~{platform} ~{distro}")})))))
 
 (deftype Pkg [pipe]
@@ -172,12 +183,19 @@
   ([c repo state]
    (run c #(repository repo state))))
 
-(defn key
-  "Import a gpg apt key"
+(defn key-file
+  "Import a gpg apt key from a file"
+  ([file]
+   (call key- (apt) file))
+  ([c file]
+   (run c #(key-file file))))
+
+(defn key-server
+  "Import a gpg apt key from a gpg server"
   ([server id]
    (call key- (apt) server id))
   ([c server id]
-   (run c #(key server id))))
+   (run c #(key-server server id))))
 
 (defn initialize
   "Setup the serializing go loop for package management access"
@@ -187,8 +205,4 @@
     (gem-consumer (gem-pipe))))
 
 (comment
-  (initialize)
-  (info (repository "deb http://linux.dropbox.com/ubuntu wiley main" :absent) ::absent)
-  (info (package "git" :absent) ::remove)
-  (info (package "git") ::add)
-  (info (update) ::update))
+  (initialize))
