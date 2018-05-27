@@ -6,7 +6,7 @@
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.pkg :as p :refer (initialize)]
    [re-conf.resources.log :refer (info debug error)]
-   [cljs.core.async :as async :refer [take! go merge]]
+   [cljs.core.async :as async :refer [take! go merge into]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -39,30 +39,21 @@
   (assoc m :home (<< "/home/~{user}")))
 
 (defn invoke
-  "Invoking all public fn in ns concurrently"
-  [n env]
-  (doseq [[k f] (fns n)]
-    (debug (<< "invoking ~{k}") ::invoke)
-    (go
-      (case (arg-count f)
-        0 (f)
-        1 (f (home env))))))
-
-(defn invoke-all
   "invoke function and return as a single channel"
   [n env]
-  (apply merge
-    (map
-      (fn [[k f]]
-       (debug (<< "invoking ~{k}") ::invoke)
-       (go
-         (case (arg-count f)
-           0 (f)
-           1 (f (home env)))))
-       (fns n))))
+  (into []
+        (merge
+         (mapv
+          (fn [[k f]]
+            (debug (<< "invoking ~{k}") ::invoke)
+            (go
+              (case (arg-count f)
+                0 (<! (f))
+                1 (<! (f (home env))))))
+          (fns n)))))
 
 (comment
-  (initialize)
   (require 're-base.rcp.docker)
-  (invoke re-base.rcp.docker {:user "re-ops" :uid 1000  :gid 1000})
+  (initialize)
+  (info (invoke re-base.rcp.docker {:user "re-ops" :uid 1000  :gid 1000}) ::done)
   (info (os :platform) ::os))
