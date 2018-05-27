@@ -22,9 +22,8 @@
 (defprotocol Repo
   (add-repo- [this repo])
   (rm-repo [this repo])
-  (key-
-    [this file]
-    [this server id]))
+  (key-file- [this file])
+  (key-server- [this server id]))
 
 (defrecord Apt [pipe]
   Package
@@ -57,7 +56,7 @@
     (go
       (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))))
 
-  (key-
+  (key-server-
     [this server id]
     (go
       (let [{:keys [distro platform]} (<! (os))]
@@ -65,7 +64,7 @@
           (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id))
           {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
 
-  (key-
+  (key-file-
     [this file]
     (go
       (let [{:keys [distro platform]} (<! (os))]
@@ -189,14 +188,14 @@
 (defn key-file
   "Import a gpg apt key from a file resource"
   ([file]
-   (call key- (apt) file))
+   (call key-file- (apt) file))
   ([c file]
    (run c #(key-file file))))
 
 (defn key-server
   "Import a gpg apt key from a gpg server resource"
   ([server id]
-   (call key- (apt) server id))
+   (call key-server- (apt) server id))
   ([c server id]
    (run c #(key-server server id))))
 
