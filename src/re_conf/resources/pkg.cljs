@@ -20,7 +20,7 @@
   (upgrade- [this]))
 
 (defprotocol Repo
-  (add-repo [this repo])
+  (add-repo- [this repo])
   (rm-repo [this repo])
   (key-
     [this file]
@@ -47,7 +47,7 @@
       (<! (sh "/usr/bin/apt-get" "upgrade" "-y"))))
 
   Repo
-  (add-repo [this repo]
+  (add-repo- [this repo]
     (go
       (if (:ok (<! (contains "/etc/apt/sources.list" repo)))
         {:ok (<< "repo ~{repo} is present, skipping") :skip true}
@@ -181,7 +181,7 @@
   ([repo]
    (repository repo :present))
   ([repo state]
-   (let [fns {:present add-repo :absent rm-repo}]
+   (let [fns {:present add-repo- :absent rm-repo}]
      (call (fns state) (apt) repo)))
   ([c repo state]
    (run c #(repository repo state))))
@@ -200,7 +200,7 @@
   ([c server id]
    (run c #(key-server server id))))
 
-(defn install
+(defn add-repo
   "Add repo, gpg key and fingerprint"
   [repo url id]
   (let [dest (<< "/tmp/~{id}.key")]
