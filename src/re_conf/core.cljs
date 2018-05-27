@@ -6,7 +6,7 @@
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.pkg :as p :refer (initialize)]
    [re-conf.resources.log :refer (info debug error)]
-   [cljs.core.async :as async :refer [take! go]]
+   [cljs.core.async :as async :refer [take! go merge]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -47,6 +47,19 @@
       (case (arg-count f)
         0 (f)
         1 (f (home env))))))
+
+(defn invoke-all
+  "invoke function and return as a single channel"
+  [n env]
+  (apply merge
+    (map
+      (fn [[k f]]
+       (debug (<< "invoking ~{k}") ::invoke)
+       (go
+         (case (arg-count f)
+           0 (f)
+           1 (f (home env)))))
+       (fns n))))
 
 (comment
   (initialize)
