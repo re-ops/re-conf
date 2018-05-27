@@ -1,8 +1,10 @@
 (ns re-conf.resources.pkg
+  "Package resources"
   (:refer-clojure :exclude [update key remove])
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.spec.pkg :refer (fingerprint)]
    [re-conf.resources.download :refer (download)]
    [re-conf.resources.common :refer (run)]
    [re-conf.resources.file :refer (contains)]
@@ -175,7 +177,7 @@
    (run c #(upgrade provider))))
 
 (defn repository
-  "Add an Ubuntu repository"
+  "Add an Ubuntu repository resource"
   ([repo]
    (repository repo :present))
   ([repo state]
@@ -185,29 +187,29 @@
    (run c #(repository repo state))))
 
 (defn key-file
-  "Import a gpg apt key from a file"
+  "Import a gpg apt key from a file resource"
   ([file]
    (call key- (apt) file))
   ([c file]
    (run c #(key-file file))))
 
 (defn key-server
-  "Import a gpg apt key from a gpg server"
+  "Import a gpg apt key from a gpg server resource"
   ([server id]
    (call key- (apt) server id))
   ([c server id]
    (run c #(key-server server id))))
 
 (defn install
-  "Add repo, gpg key and install package"
-  [repo url p]
-  (let [dest (<< "/tmp/~{p}.key")]
+  "Add repo, gpg key and fingerprint"
+  [repo url id]
+  (let [dest (<< "/tmp/~{id}.key")]
     (->
      (download url dest)
      (key-file dest)
+     (fingerprint id)
      (repository repo :present)
-     (update)
-     (package p))))
+     (update))))
 
 (defn initialize
   "Setup the serializing go loop for package management access"
