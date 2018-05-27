@@ -13,8 +13,9 @@
   [id]
   (go
     (let []
-      (let [{:keys [ok]} (<! (sh "/usr/bin/apt-key" "fingerprint" id))]
-        (if-not (empty? (ok :out))
+      (let [{:keys [ok]} (<! (sh "/usr/bin/apt-key" "fingerprint" id))
+            {:keys [out]} ok]
+        (if-not (empty? out)
           {:ok (<< "key ~{id} verfied") :key-info out}
           {:error (<< "failed to verify key ~{id}") :key-failure out})))))
 
