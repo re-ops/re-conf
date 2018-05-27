@@ -63,6 +63,6 @@
 
 (comment
   (initialize)
-  (require 're-base.rcp.shell)
-  (invoke re-base.rcp.shell {:user "re-ops" :uid 1000  :gid 1000})
+  (require 're-base.rcp.docker)
+  (invoke re-base.rcp.docker {:user "re-ops" :uid 1000  :gid 1000})
   (info (os :platform) ::os))
