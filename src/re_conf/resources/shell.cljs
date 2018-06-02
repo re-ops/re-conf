@@ -15,8 +15,8 @@
 (defn exec-chan
   "spawns a child process for cmd with args. routes stdout, stderr, and
   the exit code to a channel. returns the channel immediately."
-  [cmd args]
-  (let [c (chan) p (spawn cmd args)]
+  [cmd args opts]
+  (let [c (chan) p (spawn cmd args opts)]
     (.on (.-stdout p) "data"  #(put! c [:out  (str %)]))
     (.on (.-stderr p) "data"  #(put! c [:err  (str %)]))
     (.on p "close" #(put! c [:exit (str %)]))
@@ -27,8 +27,8 @@
   "Executes cmd with args. returns a channel immediately which
     will eventually receive a result vector of pairs [:kind data-str]
     with the last pair being [:exit code]"
-  [cmd args]
-  (let [c (exec-chan cmd (clj->js args))]
+  [cmd args opts]
+  (let [c (exec-chan cmd (clj->js args) (clj->js opts))]
     (go
       (loop [output (<! c) result {}]
         (match output
@@ -37,18 +37,22 @@
           :else
           (recur (<! c) (update result (first output) str (second output))))))))
 
-(defn apply-options [as]
-  (let [[args opts] (split-with string? as)
-        options (apply hash-map opts)]
+(defn opts-split [as]
+  (let [[args opts] (split-with string? as)]
+    [args (apply hash-map opts)]))
+
+(defn apply-options [args opts]
+  (let []
     (cond->> args
-      (options :sudo) (into ["/usr/bin/sudo"])
-      (options :dry) (or ["echo" "'dry run!'"]))))
+      (opts :sudo) (into ["/usr/bin/sudo"])
+      (opts :dry) (or ["echo" "'dry run!'"]))))
 
 (defn- sh [& as]
   (go
-    (let [[cmd & args] (apply-options as)]
+    (let [[cmdline opts] (opts-split as)
+          [cmd & args] (apply-options cmdline opts)]
       (try
-        (let [{:keys [exit] :as r} (into {} (<! (execute cmd args)))]
+        (let [{:keys [exit] :as r} (into {} (<! (execute cmd args opts)))]
           (if (= 0 exit)
             {:ok r}
             {:error r}))
