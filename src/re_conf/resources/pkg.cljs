@@ -4,6 +4,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [clojure.string :refer (join)]
    [re-conf.spec.pkg :refer (fingerprint)]
    [re-conf.resources.download :refer (download)]
    [re-conf.resources.common :refer (run)]
@@ -30,12 +31,12 @@
   (install- [this pkg]
     (debug "running install" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "install" pkg "-y"))))
+      (<! (sh "/usr/bin/apt-get" "install" (join " " pkg) "-y"))))
 
   (uninstall [this pkg]
     (debug "running uninstall" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "remove" pkg "-y"))))
+      (<! (sh "/usr/bin/apt-get" "remove" (join " " pkg) "-y"))))
 
   (update- [this]
     (go
@@ -76,11 +77,11 @@
   Package
   (install- [this pkg]
     (go
-      (<! (sh "/usr/sbin/pkg" "install" "-y" pkg))))
+      (<! (sh "/usr/sbin/pkg" "install" (join " " pkg) "-y" pkg))))
 
   (uninstall [this pkg]
     (go
-      (<! (sh "/usr/sbin/pkg" "remove" "-y" pkg))))
+      (<! (sh "/usr/sbin/pkg" "remove" "-y" (join " " pkg)))))
 
   (update- [this]
     (go
@@ -143,7 +144,7 @@
     m
     (let [a (first args)]
       (cond
-        (string? a) (into-spec (assoc m :pkg a) (rest args))
+        (string? a) (into-spec (clojure.core/update m :pkg (fn [v] (conj v a))) (rest args))
         (channel? a) (into-spec (assoc m :ch a) (rest args))
         (keyword? a) (into-spec (assoc m :state a) (rest args))
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
@@ -216,3 +217,4 @@
   (go
     (pkg-consumer (os-pipe))
     (gem-consumer (gem-pipe))))
+
