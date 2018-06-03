@@ -1,5 +1,6 @@
 (ns re-conf.resources.facts
   (:require
+   [re-conf.resources.shell :refer (exec-sync)]
    [re-conf.resources.log :refer (error info)]
    [cljs.core.async :as async :refer [<! put! chan]]))
 
@@ -10,7 +11,7 @@
 (defn desktop?
   "Are we running in a Linux desktop?"
   []
-  (not (nil? (.-DESKTOP-SESSION (.-env process)))))
+  (= (:status (exec-sync "type" ["Xorg"] {})) 0))
 
 (defn get- [c k]
   (fn [d]

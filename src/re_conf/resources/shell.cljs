@@ -12,6 +12,8 @@
 
 (def spawn (.-spawn (js/require "child_process")))
 
+(def spawn-sync (.-spawnSync (js/require "child_process")))
+
 (defn exec-chan
   "spawns a child process for cmd with args. routes stdout, stderr, and
   the exit code to a channel. returns the channel immediately."
@@ -63,8 +65,14 @@
   "Shell execution resource"
   [a & args]
   (if (channel? a)
-    (run a  #(apply sh args))
+    (run a #(apply sh args))
     (run nil #(apply sh (conj args a)))))
+
+(defn exec-sync
+  "Sync exec (not resource)"
+  [cmd & as]
+  (let [[args opts] (opts-split as)]
+    (js->clj (spawn-sync cmd args (clj->js opts)))))
 
 (defn unless
   "Run shell only if c returns :ok"
