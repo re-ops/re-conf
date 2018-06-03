@@ -68,9 +68,8 @@
         (error (<< "provision script failed due to ~(count errors) errors, check error logs exit 1.") ::exit)
         (.exit process 1)))))
 
-(require 're-base.rcp.docker)
-
 (comment
   (initialize)
+  (require 're-base.rcp.docker)
   (info (report-n-exit (invoke-all {:user "re-ops" :uid 1000  :gid 1000} re-base.rcp.docker)) ::done)
   (info (os :platform) ::os))
