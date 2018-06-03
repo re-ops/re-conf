@@ -26,17 +26,19 @@
   (key-file- [this file])
   (key-server- [this server id]))
 
+(def apt-bin "/usr/bin/apt-get")
+
 (defrecord Apt [pipe]
   Package
   (install- [this pkg]
     (debug "running install" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "install" (join " " pkg) "-y"))))
+      (<! (apply sh (flatten [apt-bin "install" pkg "-y"])))))
 
   (uninstall [this pkg]
     (debug "running uninstall" ::apt)
     (go
-      (<! (sh "/usr/bin/apt-get" "remove" (join " " pkg) "-y"))))
+      (<! (apply sh (flatten "/usr/bin/apt-get" "remove" pkg "-y")))))
 
   (update- [this]
     (go
