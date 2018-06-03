@@ -72,7 +72,8 @@
   "Sync exec (not resource)"
   [cmd & as]
   (let [[args opts] (opts-split as)]
-    (js->clj (spawn-sync cmd args (clj->js opts)))))
+    (js->clj
+     (spawn-sync cmd (clj->js args) (clj->js opts)))))
 
 (defn unless
   "Run shell only if c returns :ok"
