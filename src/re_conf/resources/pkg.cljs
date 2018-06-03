@@ -38,7 +38,7 @@
   (uninstall [this pkg]
     (debug "running uninstall" ::apt)
     (go
-      (<! (apply sh (flatten "/usr/bin/apt-get" "remove" pkg "-y")))))
+      (<! (apply sh (flatten ["/usr/bin/apt-get" "remove" pkg "-y"])))))
 
   (update- [this]
     (go
