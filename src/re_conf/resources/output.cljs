@@ -15,4 +15,4 @@
          {:error e} (error {:e e :m m} ::summary-fail)
          {:ok o} (info m ::summary-ok)
          :else (error r ::summary-error))
-       r))))
+       (assoc r :context m)))))

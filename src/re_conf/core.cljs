@@ -38,22 +38,39 @@
   [{:keys [user] :as m}]
   (assoc m :home (<< "/home/~{user}")))
 
-(defn invoke
-  "invoke function and return as a single channel"
-  [n env]
-  (into []
-        (merge
-         (mapv
-          (fn [[k f]]
-            (debug (<< "invoking ~{k}") ::invoke)
-            (go
-              (case (arg-count f)
-                0 (<! (f))
-                1 (<! (f (home env))))))
-          (fns n)))))
+(defn call-fn [env [k f]]
+  (debug (<< "invoking ~{k}") ::invoke)
+  (go
+    (case (arg-count f)
+      0 (<! (f))
+      1 (<! (f (home env))))))
+
+(defn- invoke
+  "Invoke public functions in a namespace and return results
+    (invoke re-base.rcp.backup env)
+  "
+  [env n]
+  (into [] (merge (mapv (partial call-fn env) (fns n)))))
+
+(defn invoke-all
+  "Invoke multiple namespace functions and return errors"
+  [env & nmsps]
+  (go
+    (let [results (<! (into [] (merge (map (partial invoke env) nmsps))))]
+      (mapcat (fn [rs] (filter :error rs)) results))))
+
+(defn report-n-exit [c]
+  (go
+    (let [errors (<! c)]
+      (doseq [e errors]
+        (error (<< "errors found in ~{(:context e)}") ::errors-report))
+      (when-not (empty? errors)
+        (error (<< "provision script failed due to ~(count errors) errors, check error logs exit 1.") ::exit)
+        (.exit process 1)))))
+
+(require 're-base.rcp.docker)
 
 (comment
-  (require 're-base.rcp.docker)
   (initialize)
-  (info (invoke re-base.rcp.docker {:user "re-ops" :uid 1000  :gid 1000}) ::done)
+  (info (report-n-exit (invoke-all {:user "re-ops" :uid 1000  :gid 1000} re-base.rcp.docker)) ::done)
   (info (os :platform) ::os))
