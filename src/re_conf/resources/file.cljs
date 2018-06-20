@@ -62,12 +62,37 @@
   ([c args tmpl dest]
    (run c (fn [] (run-template args tmpl dest)))))
 
+(defn- run-copy
+  [src dest]
+  (let [c (chan)]
+    (.copyFile fs src dest
+               (fn [e]
+                 (if e
+                   (put! c {:error e})
+                   (put! c {:ok (<< "copied ~{src} to ~{dest}")}))))
+
+    c))
+
+(defn copy
+  "Copy a file resource"
+  ([file dest]
+   (run-copy file dest))
+  ([c file dest]
+   (run c (fn [] (copy file dest)))))
+
 (defn chown
   "Change file/directory owner resource"
   ([dest uid gid]
    (translate (io-fs/achown dest uid gid) (<< "~{dest} uid:gid is set to ~{uid}:~{gid}")))
   ([c dest uid gid]
    (run c #(chown dest uid gid))))
+
+(defn rename
+  "Move file/directory mode resource"
+  ([src dest]
+   (translate (io-fs/arename src dest) (<< "~{src} moved to ~{dest}")))
+  ([c src dest]
+   (run c #(rename src dest))))
 
 (defn chmod
   "Change file/directory mode resource"
@@ -180,6 +205,7 @@
    (run c #(line file l state))))
 
 (comment
+  (info (copy "/tmp/oo" "/tmp/foo-1") :copy)
   (info (line "/tmp/foo" "1") ::append)
   (info (line "/tmp/foo" (line-eq "1") :absent) ::append)
   (info (io-fs/areadlink "/home/re-ops/.tmux.conf") ::symlink)
