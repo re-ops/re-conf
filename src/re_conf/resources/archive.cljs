@@ -18,12 +18,12 @@
 
 (defn bzip2
   "bzip resource"
-  [c dest]
+  [c target]
   (if-not (.existsSync fs "/usr/bin/bzip2")
     (-> c
         (package "bzip2")
-        (exec "/bin/bzip2" "-kf" "-d" dest))
-    (exec c "/bin/bzip2" "-kf" "-d" dest)))
+        (exec "/bin/bzip2" "-kf" "-d" target))
+    (exec c "/bin/bzip2" "-kf" "-d" target)))
 
 (defn untar
   "untar resource"
