@@ -49,7 +49,7 @@
       (opts :sudo) (into ["/usr/bin/sudo"])
       (opts :dry) (or ["echo" "'dry run!'"]))))
 
-(defn- sh [& as]
+(defn sh [& as]
   (go
     (let [[cmdline opts] (opts-split as)
           [cmd & args] (apply-options cmdline opts)]
