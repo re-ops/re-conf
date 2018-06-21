@@ -12,6 +12,7 @@
 (defn append-options
   [args opts]
   (cond-> args
+    (not (opts :home)) (into ["--no-create-home"])
     (opts :home) (into ["--home" (<< "/home/~(second args)")])))
 
 (defn adduser
@@ -41,6 +42,3 @@
   ([c name state options]
    (run c #(user name state options))))
 
-(comment
-  (info (user "zfs" :present {:home true}) :zfs)
-  (info (user "zfs" :absent) :zfs))
