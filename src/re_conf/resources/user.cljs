@@ -4,6 +4,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.spec.user :refer (user-exists?)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.common :refer (run)]
    [cljs.core.async :refer [<! go take!]]
@@ -20,7 +21,10 @@
   [name options]
   (let [props "'First Last,RoomNumber,WorkPhone,HomePhone'"]
     (go
-      (<! (apply sh (append-options ["/usr/sbin/adduser" name "--gecos" props "--disabled-password"] options))))))
+      (let [{:keys [ok]} (<! (user-exists? name))]
+        (if-not ok
+          (<! (apply sh (append-options ["/usr/sbin/adduser" name "--gecos" props "--disabled-password"] options)))
+          {:ok "user already exists skipping creation"})))))
 
 (defn rmuser
   "Remove a user"
@@ -41,4 +45,3 @@
    ((user-states state) name options))
   ([c name state options]
    (run c #(user name state options))))
-
