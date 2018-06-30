@@ -17,11 +17,12 @@
   [x]
   (= (type x) cljs.core.async.impl.channels/ManyToManyChannel))
 
-(def settings
+(defn settings [level]
   (let [f (clj->js {"filename" "re-conf.log" "colorize" true})]
-    {:level "info"
-     :format (winston.format.combine (winston.format.timestamp) (winston.format.json))
-     :transports [(winston.transports.File. f)]}))
+    (clj->js
+     {:level level
+      :format (winston.format.combine (winston.format.timestamp) (winston.format.json))
+      :transports [(winston.transports.File. f)]})))
 
 (defn console-format []
   (winston.format.printf
@@ -33,15 +34,23 @@
            out (if (string? message) message (.stringify js/JSON message nil 1))]
        (<< "~{date} ~{hostname} ~{level} [~{n}] - ~{out}")))))
 
-(def logger
-  (let [base (.createLogger winston (clj->js settings))
+(defn setup-logger [level]
+  (let [base (.createLogger winston (settings level))
         fmt (winston.format.combine (winston.format.colorize) (console-format))]
     (.add base (winston.transports.Console. (clj->js {:format fmt})))))
+
+(def logger (atom (setup-logger "info")))
+
+(defn debug-on []
+  (reset! logger (setup-logger "debug")))
+
+(defn debug-off []
+  (reset! logger (setup-logger "info")))
 
 (defn- winston-log
   "Using Winston to log"
   [m n level]
-  (.log logger (clj->js {:level level :message m :ns (str n)})))
+  (.log @logger (clj->js {:level level :message m :ns (str n)})))
 
 (defn- log
   [m n level]
@@ -63,5 +72,6 @@
 
 (comment
   (info {:fo 1 :bla 2 :biiiggg ""} ::log)
-  (debug "bla" ::log))
+  (error "bla" ::log)
+  (debug-on))
 
