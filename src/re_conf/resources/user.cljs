@@ -14,6 +14,8 @@
   [args opts]
   (cond-> args
     (not (opts :home)) (into ["--no-create-home"])
+    (opts :gid) (into ["--gid" (opts :gid)])
+    (opts :uid) (into ["--uid" (opts :uid)])
     (opts :home) (into ["--home" (<< "/home/~(second args)")])))
 
 (defn adduser
