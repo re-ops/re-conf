@@ -35,8 +35,14 @@
 
 (defn- home
   "Add home to the env"
-  [{:keys [user] :as m}]
-  (assoc m :home (<< "/home/~{user}")))
+  [{:keys [users] :as m}]
+   (let [{:keys [name]} (users :main)]
+     (assoc m :home (<< "/home/~{users}"))))
+
+(defn- main-user
+  "Add main user to the env"
+  [{:keys [users] :as m}]
+  (merge m (users :main)))
 
 (defn call-fn [env [k f]]
   (debug (<< "invoking ~{k}") ::invoke)
