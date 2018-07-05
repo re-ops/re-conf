@@ -36,8 +36,8 @@
 (defn- home
   "Add home to the env"
   [{:keys [users] :as m}]
-   (let [{:keys [name]} (users :main)]
-     (assoc m :home (<< "/home/~{name}"))))
+  (let [{:keys [name]} (users :main)]
+    (assoc m :home (<< "/home/~{name}"))))
 
 (defn- main-user
   "Add main user to env root"
@@ -73,7 +73,6 @@
       (when-not (empty? errors)
         (error (<< "provision script failed due to ~(count errors) errors, check error logs exit 1.") ::exit)
         (.exit process 1)))))
-
 
 (comment
   (initialize)
