@@ -6,7 +6,7 @@
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.pkg :as p :refer (initialize)]
    [re-conf.resources.log :refer (info debug error)]
-   [cljs.core.async :as async :refer [take! go merge into]]
+   [cljs.core.async :as async :refer [take! go]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -37,10 +37,10 @@
   "Add home to the env"
   [{:keys [users] :as m}]
    (let [{:keys [name]} (users :main)]
-     (assoc m :home (<< "/home/~{users}"))))
+     (assoc m :home (<< "/home/~{name}"))))
 
 (defn- main-user
-  "Add main user to the env"
+  "Add main user to env root"
   [{:keys [users] :as m}]
   (merge m (users :main)))
 
@@ -49,20 +49,20 @@
   (go
     (case (arg-count f)
       0 (<! (f))
-      1 (<! (f (home env))))))
+      1 (<! (f (-> env home main-user))))))
 
 (defn- invoke
   "Invoke public functions in a namespace and return results
     (invoke re-base.rcp.backup env)
   "
   [env n]
-  (into [] (merge (mapv (partial call-fn env) (fns n)))))
+  (async/into [] (async/merge (mapv (partial call-fn env) (fns n)))))
 
 (defn invoke-all
   "Invoke multiple namespace functions and return errors"
   [env & nmsps]
   (go
-    (let [results (<! (into [] (merge (map (partial invoke env) nmsps))))]
+    (let [results (<! (async/into [] (async/merge (map (partial invoke env) nmsps))))]
       (mapcat (fn [rs] (filter :error rs)) results))))
 
 (defn report-n-exit [c]
@@ -74,8 +74,7 @@
         (error (<< "provision script failed due to ~(count errors) errors, check error logs exit 1.") ::exit)
         (.exit process 1)))))
 
+
 (comment
   (initialize)
-  (require 're-base.rcp.docker)
-  (info (report-n-exit (invoke-all {:user "re-ops" :uid 1000  :gid 1000} re-base.rcp.docker)) ::done)
-  (info (os :platform) ::os))
+  (require 're-base.rcp.docker))
