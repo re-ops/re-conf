@@ -123,10 +123,8 @@
 
 (defn directory
   "Directory resource"
-  ([dest]
-   (directory nil dest :present))
-  ([c dest]
-   (directory c dest :present))
+  ([dest state]
+   (directory nil dest state))
   ([c dest state]
    (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
 
