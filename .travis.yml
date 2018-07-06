@@ -2,4 +2,6 @@ sudo: required
 language: clojure
 jdk:
   - oraclejdk8
-script: lein travis
+script:
+  - lein travis
+  - ! lein cljsbuild test | grep FAIL
