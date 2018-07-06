@@ -108,7 +108,7 @@
 
     :aliases {
        "travis" [
-         "do" "clean," "cljfmt" "check," "npm" "install," "cljsbuild" "once" "prod," "cljsbuild" "test"
+         "do" "clean," "cljfmt" "check," "npm" "install," "cljsbuild" "once" "prod"
        ]
       "docs" [
         "with-profile" "codox" "do" "codox"
