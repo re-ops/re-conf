@@ -26,7 +26,7 @@
 
 (defn- repo-exists?
   [repo path]
-  (when (.existsSync fs path)
+  (when (.existsSync fs (<< "~{path}/.git/config"))
     (includes? (io/slurp (<< "~{path}/.git/config")) repo)))
 
 (defn run-pull
