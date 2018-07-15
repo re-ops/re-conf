@@ -21,6 +21,6 @@
     (if (<! (io-fs/asymlink? target))
       (let [[_ actual] (<! (io-fs/areadlink target))]
         (if (= actual src)
-          {:ok (<< "link ~{src} -> ~{target} exists") :exists true}
-          {:error (<< "~{src} points to  -> ~{target} exists") :exists true}))
+          {:ok (<< "link ~{src} to ~{target} exists") :exists true}
+          {:error (<< "~{src} points to ~{actual} and not ~{target}") :exists true}))
       {:error (<< "link missing") :exists false})))
