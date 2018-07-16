@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [clojure.string :refer (includes? split-lines join)]
+   [clojure.string :refer (includes? split-lines join split)]
    [re-conf.resources.log :refer (info debug error)]
    [re-conf.resources.common :refer (run obj->clj)]
    [re-conf.resources.shell :refer (sh)]
@@ -22,10 +22,10 @@
   "convert io.fs nil to :ok and err? into {:error e}"
   [c m]
   (go
-    (let [r (<! c)]
+    (let [[f s :as r] (<! c)]
       (cond
-        (nil? (first r)) {:ok m}
-        :else {:error (map obj->clj r)}))))
+        (nil? f) {:ok m}
+        :else {:error (if (string? f) f (map obj->clj r))}))))
 
 (defn stats
   "Get file stats info"
@@ -202,9 +202,29 @@
   ([c file l state]
    (run c #(line file l state))))
 
-(comment
-  (info (copy "/tmp/oo" "/tmp/foo-1") :copy)
-  (info (line "/tmp/foo" "1") ::append)
-  (info (line "/tmp/foo" (line-eq "1") :absent) ::append)
-  (info (io-fs/areadlink "/home/re-ops/.tmux.conf") ::symlink)
-  (info (chmod "/tmp/fo" "0777") ::chmod))
+(defn- edit-key [k v sep]
+  (fn [line]
+    (let [[f & _] (split line (re-pattern sep))]
+      (if (= f k)
+        (str k sep v)
+        line))))
+
+(defn- edit-line [dest k v sep]
+  (go
+    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+      (if err
+        {:error err}
+        (let [edited (map (edit-key k v sep)  (split-lines lines))]
+          (<!
+           (translate
+            (io-fs/awriteFile dest (join "\n" edited) {:override true})
+            (<< "set ~{k}~{sep}~{v}"))))))))
+
+(defn edit
+  "Edit a value in a line, set Foo to Bar with Seperator =
+     (edit \"/tmp/foo\" \"Foo\" \"Bar\" \"=\")
+   "
+  ([file k v s]
+   (edit-line file k v s))
+  ([c file k v s]
+   (run c #(edit-line file k v s))))
