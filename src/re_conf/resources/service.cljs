@@ -21,17 +21,17 @@
   (start [this service]
     (debug "starting service" ::systemd)
     (go
-      (<! (sh systemd-bin "start" service))))
+      (<! (sh systemd-bin service "start"))))
 
   (stop [this service]
     (debug "stopping service" ::systemd)
     (go
-      (<! (sh systemd-bin "stop" service))))
+      (<! (sh systemd-bin service "stop"))))
 
   (restart [this service]
     (debug "restarting service" ::systemd)
     (go
-      (<! (sh systemd-bin "restart" service))))
+      (<! (sh systemd-bin service "restart"))))
 
   (disable [this service]
     (debug "disabling service" ::systemd)
@@ -45,7 +45,7 @@
     m
     (let [a (first args)]
       (cond
-        (string? a) (into-spec (clojure.core/update m :service (fn [v] (conj v a))) (rest args))
+        (string? a) (into-spec (assoc m :name a) (rest args))
         (channel? a) (into-spec (assoc m :ch a) (rest args))
         (keyword? a) (into-spec (assoc m :state a) (rest args))
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
@@ -53,8 +53,9 @@
 (defn service
   "Service resource with optional provider and state parameters"
   ([& args]
-   (let [{:keys [ch service state provider] :or {provider systemd state :present}} (into-spec {} args)
+   (let [{:keys [ch name state provider] :or {provider systemd state :restart}} (into-spec {} args)
          fns {:start start :stop stop :disable disable :restart restart}]
      (if ch
-       (run ch #((fns state) provider service))
-       ((fns state) provider service)))))
+       (run ch #((fns state) provider name))
+       ((fns state) provider name)))))
+
