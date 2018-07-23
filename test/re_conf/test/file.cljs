@@ -2,7 +2,7 @@
   (:require
    [cljs-node-io.fs :refer (adir?)]
    [cljs.core.async :as async :refer [<! go]]
-   [re-conf.resources.file :refer (chown chmod directory stats)]
+   [re-conf.resources.file :refer (chown chmod directory stats line file)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (def fs (js/require "fs"))
@@ -23,4 +23,17 @@
              (is (ok? mode))
              (is (= 511 (stat :mode)))
              (is dir)
+             (done)))))
+
+(deftest line
+  (async done
+         (go
+           (let [present (<! (file "/tmp/3" :present))
+                 append (<! (line "/tmp/3" "key = value" :present))
+                 set-key (<! (set-key  "/tmp/3" "key" "foo" " = " :set))
+                 absent (<! (file "/tmp/3" :absent))]
+             (is (ok? present))
+             (is (ok? append))
+             (is (ok? set-key))
+             (is (ok? absent))
              (done)))))
