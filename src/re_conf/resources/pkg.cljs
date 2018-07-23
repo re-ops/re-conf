@@ -8,7 +8,7 @@
    [re-conf.spec.pkg :refer (fingerprint)]
    [re-conf.resources.download :refer (download)]
    [re-conf.resources.common :refer (run)]
-   [re-conf.resources.file :refer (contains)]
+   [re-conf.spec.file :refer (contains)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
    [re-conf.resources.facts :refer (os)]
