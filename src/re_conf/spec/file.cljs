@@ -3,7 +3,10 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.resources.common :refer (run)]
+   [clojure.string :refer (includes?)]
    [cljs.core.async :as async :refer [<! go]]
+   [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]))
 
 (defn check-dir
@@ -24,3 +27,13 @@
           {:ok (<< "link ~{src} to ~{target} exists") :exists true}
           {:error (<< "~{src} points to ~{actual} and not ~{target}") :exists true}))
       {:error (<< "link missing") :exists false})))
+
+(defn contains
+  "Check that a file contains string spec"
+  ([f s]
+   (go
+     (if (includes? (io/slurp f) s)
+       {:ok (<< "~{f} contains ~{s}")}
+       {:error (<< "~{f} does not contain ~{s}")})))
+  ([c f s]
+   (run c #(contains f s))))
