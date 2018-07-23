@@ -8,7 +8,7 @@
    [re-conf.resources.common :refer (run obj->clj)]
    [re-conf.resources.shell :refer (sh)]
    [re-conf.resources.log :refer (info)]
-   [re-conf.spec.file :refer (check-link check-dir contains)]
+   [re-conf.spec.file :refer (check-link check-dir check-file contains)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]
@@ -128,6 +128,27 @@
   ([c dest state]
    (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
 
+(defn touch [dest]
+  (go
+    (if-not (:exists (<! (check-file dest)))
+      (<! (io-fs/atouch dest))
+      [nil (<< "file ~{dest} exists, skipping touch")])))
+
+(defn rmfile [dest]
+  (go
+    (if (:exists (<! (check-file dest)))
+      (<! (io-fs/arm dest))
+      [nil (<< "file ~{dest} does not exists, skipping file rm")])))
+
+(def file-states {:present touch
+                  :absent rmfile})
+(defn file
+  "File resource"
+  ([dest state]
+   (file nil dest state))
+  ([c dest state]
+   (run c #(translate ((file-states state) dest) (<< "File ~{dest} is ~(name state)")))))
+
 (defn mklink
   [src target]
   (go
@@ -217,6 +238,4 @@
        (run ch #(apply (fns state) args))
        (apply (fns state) args)))))
 
-(comment
-  (conj (conj [1] 2) 3)
-  (info (line "/tmp/bla" "key" "bla" " = " :set) ::set))
+(comment)

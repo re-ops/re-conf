@@ -9,6 +9,14 @@
    [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]))
 
+(defn check-file
+  "File check spec"
+  [d]
+  (go
+    (if-not (<! (io-fs/afile? d))
+      {:error (<< "file ~{d} is missing") :exists false}
+      {:ok (<< "file ~{d} exists") :exists true})))
+
 (defn check-dir
   "Dir check spec"
   [d]
