@@ -3,12 +3,12 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [clojure.string :refer (includes? split-lines join split)]
-   [re-conf.resources.log :refer (info debug error)]
+   [clojure.string :refer (split-lines join split)]
+   [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.common :refer (run obj->clj)]
    [re-conf.resources.shell :refer (sh)]
    [re-conf.resources.log :refer (info)]
-   [re-conf.spec.file :refer (check-link check-dir)]
+   [re-conf.spec.file :refer (check-link check-dir contains)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]
@@ -75,10 +75,10 @@
 
 (defn copy
   "Copy a file resource"
-  ([file dest]
-   (run-copy file dest))
-  ([c file dest]
-   (run c (fn [] (copy file dest)))))
+  ([src dest]
+   (run-copy src dest))
+  ([c src dest]
+   (run c (fn [] (copy src dest)))))
 
 (defn chown
   "Change file/directory owner resource"
@@ -151,16 +151,6 @@
   ([c src target state]
    (run c #(symlink src target state))))
 
-(defn contains
-  "Check that a file contains string spec"
-  ([f s]
-   (go
-     (if (includes? (io/slurp f) s)
-       {:ok (<< "~{f} contains ~{s}")}
-       {:error (<< "~{f} does not contain ~{s}")})))
-  ([c f s]
-   (run c #(contains f s))))
-
 (defn- rm-line [dest f]
   (go
     (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
@@ -174,19 +164,43 @@
 
 (defn- add-line
   "Append a line to a file"
-  [file line]
+  [dest line]
   (go
-    (if (:ok (<! (contains file line)))
-      {:ok (<< " ~{file} contains ~{line} skipping") :skip true}
-      (<! (translate (io-fs/awriteFile file line {:append true}) (<< "added ~{line} to ~{file}"))))))
+    (if (:ok (<! (contains dest line)))
+      {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
+      (<! (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))
+
+(defn- set-key [k v sep]
+  (fn [line]
+    (let [[f & _] (split line (re-pattern sep))]
+      (if (= f k)
+        (str k sep v)
+        line))))
+
+(defn- set-line [dest k v sep]
+  (go
+    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+      (if err
+        {:error err}
+        (let [edited (map (set-key k v sep)  (split-lines lines))]
+          (<!
+           (translate
+            (io-fs/awriteFile dest (join "\n" edited) {:override true})
+            (<< "set ~{k}~{sep}~{v}"))))))))
 
 (defn line-eq
   "line equal predicate"
   [line]
   (fn [curr] (not (= curr line))))
 
-(def line-states {:present add-line
-                  :absent  rm-line})
+(defn into-spec [m args]
+  (if (empty? args)
+    m
+    (let [a (first args)]
+      (cond
+        (or (fn? a) (string? a)) (into-spec (clojure.core/update m :args (fn [v] (conj v a))) (rest args))
+        (channel? a) (into-spec (assoc m :ch a) (rest args))
+        (keyword? a) (into-spec (assoc m :state a) (rest args))))))
 
 (defn line
   "File line resource either append or remove lines:
@@ -194,37 +208,15 @@
     (line \"/tmp/foo\" \"bar\" :present); append explicit
     (line \"/tmp/foo\" (line-eq \"bar\") :absent); remove lines equal to bar from the file
     (line \"/tmp/foo\" (fn [curr] (> 5 (.length curr))) :absent); remove lines using a function
+    (line \"/tmp/foo\" \"key\" \"value\" \"=\" :set); set key value using seperator
   "
-  ([file l]
-   (line file l :present))
-  ([file l state]
-   ((line-states state) file l))
-  ([c file l state]
-   (run c #(line file l state))))
+  ([& as]
+   (let [{:keys [ch args state] :or {state :present}} (update (into-spec {} as) :args reverse)
+         fns {:present add-line :set set-line :absent rm-line}]
+     (if ch
+       (run ch #(apply (fns state) args))
+       (apply (fns state) args)))))
 
-(defn- edit-key [k v sep]
-  (fn [line]
-    (let [[f & _] (split line (re-pattern sep))]
-      (if (= f k)
-        (str k sep v)
-        line))))
-
-(defn- edit-line [dest k v sep]
-  (go
-    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
-      (if err
-        {:error err}
-        (let [edited (map (edit-key k v sep)  (split-lines lines))]
-          (<!
-           (translate
-            (io-fs/awriteFile dest (join "\n" edited) {:override true})
-            (<< "set ~{k}~{sep}~{v}"))))))))
-
-(defn edit
-  "Edit a value in a line, set Foo to Bar with Seperator =
-     (edit \"/tmp/foo\" \"Foo\" \"Bar\" \"=\")
-   "
-  ([file k v s]
-   (edit-line file k v s))
-  ([c file k v s]
-   (run c #(edit-line file k v s))))
+(comment
+  (conj (conj [1] 2) 3)
+  (info (line "/tmp/bla" "key" "bla" " = " :set) ::set))
