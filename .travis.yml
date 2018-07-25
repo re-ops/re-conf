@@ -4,4 +4,6 @@ jdk:
   - oraclejdk8
 script:
   - lein travis
-  - ! lein cljsbuild test | grep FAIL
+  - lein cljsbuild test &> out
+  - cat out
+  - ! grep FAIL out
