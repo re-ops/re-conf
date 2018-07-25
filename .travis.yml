@@ -3,7 +3,4 @@ language: clojure
 jdk:
   - oraclejdk8
 script:
-  - lein travis
-  - lein cljsbuild test &> out
-  - cat out
-  - ! grep FAIL out
+  - /bin/bash travis.sh
