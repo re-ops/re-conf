@@ -10,7 +10,7 @@
 (defn ok?  [m]
   (contains? m :ok))
 
-(deftest file
+(deftest directory-modes
   (async done
          (go
            (let [present (<! (directory "/tmp/2" :present))
@@ -25,12 +25,12 @@
              (is dir)
              (done)))))
 
-(deftest line
+(deftest line-manipulation
   (async done
          (go
            (let [present (<! (file "/tmp/3" :present))
                  append (<! (line "/tmp/3" "key = value" :present))
-                 set-key (<! (set-key  "/tmp/3" "key" "foo" " = " :set))
+                 set-key (<! (line  "/tmp/3" "key" "foo" " = " :set))
                  absent (<! (file "/tmp/3" :absent))]
              (is (ok? present))
              (is (ok? append))
