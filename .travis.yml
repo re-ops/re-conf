@@ -2,7 +2,5 @@ sudo: required
 language: clojure
 jdk:
   - oraclejdk8
-node_js: "0.8.11"
 script:
-  - which node
   - /bin/bash travis.sh

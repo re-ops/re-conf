@@ -1,7 +1,4 @@
-echo ">> lein travis"
 lein travis
-echo ">> lein cljsbuild test"
-sudo lein cljsbuild test &> out
-echo ">> grep for failures"
+sudo "PATH=$PATH:/home/travis/.nvm/versions/node/v8.9.1/bin/" lein cljsbuild test &> out
 cat out
 ! grep FAIL out
