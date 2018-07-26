@@ -11,9 +11,9 @@
   (async done
          (go
            (let [_ (initialize)
-                 present (<! (package "gt5"))
-                 installed (<! (installed? "gt5"))
-                 absent (<! (package "gt5" :absent))]
+                 present (<! (package "libxml2-dev"))
+                 installed (<! (installed? "libxml2-dev"))
+                 absent (<! (package "libxml2-dev" :absent))]
              (is (ok? present))
              (is (ok? installed))
              (is (ok? absent))
