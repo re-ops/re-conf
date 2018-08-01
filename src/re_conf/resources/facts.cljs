@@ -11,7 +11,7 @@
 (defn desktop?
   "Are we running in a Linux desktop?"
   []
-  (= (:status (exec-sync "type" "Xorg")) 0))
+  (= (:status (exec-sync "bash" "-c" "type Xorg")) 0))
 
 (defn get- [c k]
   (fn [d]

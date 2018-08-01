@@ -73,7 +73,7 @@
   [cmd & as]
   (let [[args opts] (opts-split as)]
     (js->clj
-     (spawn-sync cmd (clj->js args) (clj->js opts)))))
+     (spawn-sync cmd (clj->js args) (clj->js opts)) :keywordize-keys true)))
 
 (defn unless
   "Run shell only if c returns :ok"
