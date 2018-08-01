@@ -4,6 +4,7 @@
    [clojure.core.strint :refer (<<)])
   (:require
    [re-conf.resources.common :refer (run)]
+   [re-conf.resources.facts :refer (os)]
    [cljs.core.async :refer [<! go]]
    [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.shell :refer (sh)]))
@@ -15,6 +16,13 @@
   (disable [this service]))
 
 (def systemd-bin "/usr/sbin/service")
+
+(defn sysctl []
+  (go
+    (case (<! (os :release))
+      "16.04" "/sbin/systemctl"
+      "18.04" "/bin/systemctl"
+      :no-matching-release!)))
 
 (defrecord Systemd []
   Service
@@ -36,7 +44,7 @@
   (disable [this service]
     (debug "disabling service" ::systemd)
     (go
-      (<! (sh "/sbin/systemctl" "disable" (<< "~{service}.service"))))))
+      (<! (sh (<! (sysctl)) "disable" (<< "~{service}.service"))))))
 
 (def systemd (Systemd.))
 
