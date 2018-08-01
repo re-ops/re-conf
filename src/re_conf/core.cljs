@@ -33,23 +33,12 @@
   [n]
   (js->clj (js/Object n)))
 
-(defn- home
-  "Add home to the env"
-  [{:keys [users] :as m}]
-  (let [{:keys [name]} (users :main)]
-    (assoc m :home (<< "/home/~{name}"))))
-
-(defn- main-user
-  "Add main user to env root"
-  [{:keys [users] :as m}]
-  (merge m (users :main)))
-
 (defn call-fn [env [k f]]
   (debug (<< "invoking ~{k}") ::invoke)
   (go
     (case (arg-count f)
       0 (<! (f))
-      1 (<! (f (-> env home main-user))))))
+      1 (<! (f env)))))
 
 (defn- invoke
   "Invoke public functions in a namespace and return results
