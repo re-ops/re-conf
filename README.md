@@ -61,20 +61,7 @@ $ node re-conf.js
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking restic
 ```
 
-## Resources
-
-Re-conf inclues common resources to choose from ranging from package to file and service resources:
-
-```clojure
-(defn template
-  "File template resource"
-  ([args tmpl dest]
-   (template nil args tmpl dest))
-  ([c args tmpl dest]
-   (run c (fn [] (run-template args tmpl dest)))))
-
-```
-They are included under src/re_conf/resources, check (docs)[https://re-ops.github.io/re-conf/] resources section for complete listing.
+Check [docs](https://re-ops.github.io/re-conf/) under the resources section for complete listing.
 
 # Development
 
