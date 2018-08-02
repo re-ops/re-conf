@@ -61,7 +61,7 @@ $ node re-conf.js
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking restic
 ```
 
-Check [docs](https://re-ops.github.io/re-conf/) under the resources section for complete listing.
+Check the [docs](https://re-ops.github.io/re-conf/) for complete resources listing.
 
 # Development
 
