@@ -27,16 +27,6 @@
         (nil? f) {:ok m}
         :else {:error (if (string? f) f (map obj->clj r))}))))
 
-(defn stats
-  "Get file stats info"
-  [dest]
-  (go
-    (let [[err stat] (<! (io-fs/astat dest))
-          prms (io-fs/permissions stat)]
-      (if (nil? err)
-        {:ok (assoc (obj->clj stat) :mode prms)}
-        {:error err}))))
-
 ; inner resource implemetation
 
 (defn- run-template
@@ -56,7 +46,10 @@
     (opts :recursive) (into args ["-R"])))
 
 (defn template
-  "File template resource"
+  "Create a file from a mustache template resource:
+
+   (template {:keys ...} \"/home/re-ops/.ssh/autorized-keys\" \"authorized-keys.mustache\")
+   "
   ([args tmpl dest]
    (template nil args tmpl dest))
   ([c args tmpl dest]
@@ -74,34 +67,46 @@
     c))
 
 (defn copy
-  "Copy a file resource"
+  "Copy a file resource:
+
+    (copy src dest)
+  "
   ([src dest]
    (run-copy src dest))
   ([c src dest]
    (run c (fn [] (copy src dest)))))
 
 (defn chown
-  "Change file/directory owner resource"
+  "Change file/directory owner using uid & gid resource:
+
+    (chown \"/home\"/re-ops/.ssh\" 1001 1002)
+   "
   ([dest uid gid]
    (translate (io-fs/achown dest uid gid) (<< "~{dest} uid:gid is set to ~{uid}:~{gid}")))
   ([c dest uid gid]
    (run c #(chown dest uid gid))))
 
 (defn rename
-  "Move file/directory mode resource"
+  "Rename a file/directory resource:
+
+    (rename \"/tmp/foo\"  \"/tmp/bar\")
+  "
   ([src dest]
    (translate (io-fs/arename src dest) (<< "~{src} moved to ~{dest}")))
   ([c src dest]
    (run c #(rename src dest))))
 
 (defn chmod
-  "Change file/directory mode resource"
+  "Change file/directory mode resource:
+
+    (chmod \"/home\"/re-ops/.ssh\" \"0777\")
+  "
   ([dest mode]
    (translate (io-fs/achmod dest mode) (<< "~{dest} mode is set to ~{mode}")))
   ([c dest mode]
    (run c #(chmod dest mode))))
 
-(defn rmdir [d]
+(defn- rmdir [d]
   (go
     (if-not (:exists (<! (check-dir d)))
       [nil (<< "folder ~{d} missing, skipping rmdir")]
@@ -112,7 +117,7 @@
             (<! (io-fs/armdir d))
             (<! (io-fs/arm-r d))))))))
 
-(defn mkdir [d]
+(defn- mkdir [d]
   (go
     (if-not (:exists (<! (check-dir d)))
       (<! (io-fs/amkdir d))
@@ -122,19 +127,23 @@
                        :absent rmdir})
 
 (defn directory
-  "Directory resource"
+  "Directory resource:
+
+    (directory \"/tmp/bla\" :present) ; create directory
+    (directory \"/tmp/bla\" :absent) ; remove directory
+  "
   ([dest state]
    (directory nil dest state))
   ([c dest state]
    (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
 
-(defn touch [dest]
+(defn- touch [dest]
   (go
     (if-not (:exists (<! (check-file dest)))
       (<! (io-fs/atouch dest))
       [nil (<< "file ~{dest} exists, skipping touch")])))
 
-(defn rmfile [dest]
+(defn- rmfile [dest]
   (go
     (if (:exists (<! (check-file dest)))
       (<! (io-fs/arm dest))
@@ -143,13 +152,17 @@
 (def file-states {:present touch
                   :absent rmfile})
 (defn file
-  "File resource"
+  "File resource:
+
+    (file \"/tmp/bla\" :present) ; touch a file
+    (file \"/tmp/bla\" :absent) ; remove a file
+  "
   ([dest state]
    (file nil dest state))
   ([c dest state]
    (run c #(translate ((file-states state) dest) (<< "File ~{dest} is ~(name state)")))))
 
-(defn mklink
+(defn- mklink
   [src target]
   (go
     (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
@@ -162,7 +175,10 @@
 (def symlink-states {:present mklink})
 
 (defn symlink
-  "Symlink resource"
+  "Symlink resource:
+
+    (symlink \"/home/re-ops/.vim/.vimrc\"  \"/home/re-ops/.vimrc\") ; create symlink
+  "
   ([src target]
    (symlink src target :present))
   ([src target state]
@@ -225,6 +241,7 @@
 
 (defn line
   "File line resource either append or remove lines:
+
     (line \"/tmp/foo\" \"bar\"); append line to the file
     (line \"/tmp/foo\" \"bar\" :present); append explicit
     (line \"/tmp/foo\" (line-eq \"bar\") :absent); remove lines equal to bar from the file

@@ -45,3 +45,13 @@
        {:error (<< "~{f} does not contain ~{s}")})))
   ([c f s]
    (run c #(contains f s))))
+
+(defn stats
+  "Get file stats info"
+  [dest]
+  (go
+    (let [[err stat] (<! (io-fs/astat dest))
+          prms (io-fs/permissions stat)]
+      (if (nil? err)
+        {:ok (assoc (obj->clj stat) :mode prms)}
+        {:error err}))))

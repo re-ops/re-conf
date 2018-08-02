@@ -2,7 +2,8 @@
   (:require
    [cljs-node-io.fs :refer (adir?)]
    [cljs.core.async :as async :refer [<! go]]
-   [re-conf.resources.file :refer (chown chmod directory stats line file)]
+   [re-conf.resources.file :refer (chown chmod directory line file)]
+   [re-conf.spec.file :refer (stats)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (def fs (js/require "fs"))
