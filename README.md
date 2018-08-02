@@ -22,9 +22,9 @@ And not to be:
 
 ## Look and feel
 
-* Re-conf use simple functions to describe threading of resources
-* Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins
-* Functions are executed concurrently so multiple resource run at the same time (but still serial within each function)
+* Re-conf use simple functions to describe threading of resources.
+* Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins.
+* Functions are executed concurrently so multiple resource run at the same time (but still serial within each function) with the only exception being package management operations.
 * There is no hidden execution or dependency graph or any other hidden mechanism
 
 ```clojure
@@ -63,25 +63,18 @@ $ node re-conf.js
 
 ## Resources
 
-Implemented:
+Re-conf inclues common resources to choose from ranging from package to file and service resources:
 
- * Template for generating a file.
- * Package for installing packages.
- * Exec for executing shell commands.
- * Download for performing file download operations.
- * Checksum for verifying files.
+```clojure
+(defn template
+  "File template resource"
+  ([args tmpl dest]
+   (template nil args tmpl dest))
+  ([c args tmpl dest]
+   (run c (fn [] (run-template args tmpl dest)))))
 
-TBD:
-
- * File, create a file from a source.
- * Edit for editing a file.
- * Repo for adding package repositories.
- * Service, start stop and restart.
-Adding more resources is just a couple of functions away.
-
-# Platforms
-
-NodeJs will be the initial platform to be supported (JVM might be supported after).
+```
+They are included under src/re_conf/resources, check (docs)[https://re-ops.github.io/re-conf/] resources section for complete listing.
 
 # Development
 
@@ -98,7 +91,7 @@ $ lein repl
 Using a second window:
 
 ```bash
-$ node target/js/compiled/shim.js
+$ node target/js/compiled/re-conf.js
 ```
 
 In the VIM session:
