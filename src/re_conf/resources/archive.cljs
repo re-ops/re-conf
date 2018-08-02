@@ -1,5 +1,5 @@
 (ns re-conf.resources.archive
-  "Archive extraction"
+  "Archive extraction and manipulation resources"
   (:require
    [re-conf.resources.common :refer (run)]
    [re-conf.resources.pkg :refer (package)]
@@ -8,7 +8,10 @@
 (def fs (js/require "fs"))
 
 (defn unzip
-  "Unzip resource"
+  "Unzip resource:
+
+    (unzip \"foo.zip\" \"/tmp/foo\")
+  "
   [c src dest]
   (if-not (.existsSync fs "/usr/bin/unzip")
     (-> c
@@ -17,7 +20,10 @@
     (exec c "/usr/bin/unzip" "-o" src "-d" dest)))
 
 (defn bzip2
-  "bzip resource"
+  "bzip2 extraction resource:
+
+    (bzip2 \"foo.bz2\")
+  "
   [c target]
   (if-not (.existsSync fs "/usr/bin/bzip2")
     (-> c
@@ -26,6 +32,9 @@
     (exec c "/bin/bzip2" "-kf" "-d" target)))
 
 (defn untar
-  "untar resource"
+  "Untar resource:
+
+    (untar \"foo.tar\" \"/tmp/foo\")
+  "
   [c src dest]
   (exec c "/bin/tar" "-xzf" src "-C" dest))

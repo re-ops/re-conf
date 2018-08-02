@@ -33,14 +33,14 @@
     (.pipe getter file)
     c))
 
-(defn verify
+(defn- verify
   "Verify checksum matching"
   [sum expected]
   (if (= sum expected)
     {:ok {:message "checksum matches" :sum sum :expected expected}}
     {:error {:message "checksum does not match!" :sum sum :expected expected}}))
 
-(defn run-checkum
+(defn- run-checkum
   [f expected k]
   (let [shasum (.createHash crypto (name k))
         stream (.ReadStream fs f)
@@ -53,7 +53,10 @@
 ; resources
 
 (defn checksum
-  "Checksum a file and validate expected value"
+  "Checksum a file and validate expected value:
+
+    (checksum \"foo.zip\" \"6575f835...\" :sha256)
+   "
   ([file e k]
    (checksum nil file e k))
   ([c file e k]
@@ -61,7 +64,9 @@
 
 (defn download
   "Download file resource, if checksum is provided download will be lazy:
-    (download url dest expected :sha256); download if file missing or checksum mismatch
+
+    (download url dest expected :sha256) ; download only if file missing or checksum mismatch
+
     (download url dest); always download
    "
   ([url dest]

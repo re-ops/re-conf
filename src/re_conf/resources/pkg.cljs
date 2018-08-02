@@ -152,7 +152,13 @@
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
 
 (defn package
-  "Package resource with optional provider and state parameters"
+  "Package resource with optional provider and state parameters:
+
+    (package \"ghc\") ; state is present by default
+    (package \"ghc\" \"gnome-terminal\") ; multiple packages
+    (package \"ghc\" :present) ; explicit state
+    (package \"ghc\" :absent) ; remove package
+  "
   ([& args]
    (let [{:keys [ch pkg state provider] :or {provider (apt) state :present}} (into-spec {} args)
          fns {:present install- :absent uninstall}]
@@ -161,7 +167,10 @@
        (call (fns state) provider pkg)))))
 
 (defn update
-  "Update packages"
+  "Update package repository index resource:
+
+    (update)
+  "
   ([]
    (update nil))
   ([c]
@@ -170,7 +179,10 @@
    (run c #(call update- provider))))
 
 (defn upgrade
-  "Upgrade packages"
+  "Upgrade installed packages:
+
+    (upgrade)
+  "
   ([]
    (upgrade (apt)))
   ([provider]
@@ -179,7 +191,11 @@
    (run c #(upgrade provider))))
 
 (defn repository
-  "Add an Ubuntu repository resource"
+  "Package repository resource:
+
+    (repository \"deb https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu/ xenial main\" :present)
+   (repository \"deb https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu/ xenial main\" :absent)
+   "
   ([repo]
    (repository repo :present))
   ([repo state]
@@ -189,21 +205,32 @@
    (run c #(repository repo state))))
 
 (defn key-file
-  "Import a gpg apt key from a file resource"
+  "Import a gpg apt key from a file resource:
+
+     (key-file \"key.gpg\")
+   "
   ([file]
    (call key-file- (apt) file))
   ([c file]
    (run c #(key-file file))))
 
 (defn key-server
-  "Import a gpg apt key from a gpg server resource"
+  "Import a gpg apt key from a gpg server resource:
+
+     (key-server \"keyserver.ubuntu.com\" \"42ED3C30B8C9F76BC85AC1EC8B095396E29035F0\")
+   "
   ([server id]
    (call key-server- (apt) server id))
   ([c server id]
    (run c #(key-server server id))))
 
 (defn add-repo
-  "Add repo, gpg key and fingerprint"
+  "Add repo, gpg key and fingerprint:
+
+   (let [repo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\"
+         key \"https://dl-ssl.google.com/linux/linux_signing_key.pub\"]
+      (add-repo repo key \"7FAC5991\"))
+  "
   [repo url id]
   (let [dest (<< "/tmp/~{id}.key")]
     (->
