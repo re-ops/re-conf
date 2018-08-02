@@ -1,5 +1,5 @@
 (defproject re-conf "0.2.3"
-  :description "Machine configuration and spec recipes"
+  :description "Functional configuration management using Clojure(script)"
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
 
@@ -97,7 +97,7 @@
        :dependencies [[org.clojure/tools.reader "1.1.0"]
                       [codox-theme-rdash "0.1.2"]]
        :plugins [[lein-codox "0.10.3"]]
-       :codox {:project {:name "re-mote"}
+       :codox {:project {:name "re-conf"}
                :themes [:rdash]
                :language :clojurescript
                :source-paths ["src"]
