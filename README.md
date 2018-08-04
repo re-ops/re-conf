@@ -22,10 +22,20 @@ And not to be:
 
 ## Look and feel
 
-* Re-conf use simple functions to describe threading of resources.
-* Within each function the execution is serial, each resource is executed asynchronously and once its done the next step begins.
-* Functions are executed concurrently so multiple resource run at the same time (but still serial within each function) with the only exception being package management operations.
-* There is no hidden execution or dependency graph or any other hidden mechanism
+Re-conf use simple functions to describe configuration resources:
+
+```clojure
+
+(line "/tmp/foo" "bar")
+
+(template {:keys ...} "/home/re-ops/.ssh/autorized-keys" "authorized-keys.mustache")
+
+(package "ghc")
+```
+
+Check the [docs](https://re-ops.github.io/re-conf/) for complete resources listing.
+
+Functions thread resources using Clojure built in macro:
 
 ```clojure
 (defn packer
@@ -39,19 +49,24 @@ And not to be:
      (checksum dest sha :sha256)
      (exec "/usr/bin/unzip" "-o" dest "-d" "/tmp/packer")
      (summary "installing packer done"))))
-
-(defn restic
-  "Setting up restic"
-  []
-  (let [dest "/tmp/restic_0.8.3_linux_amd64.bz2"
-        sha "1e9aca80c4f4e263c72a83d4333a9dac0e24b24e1fe11a8dc1d9b38d77883705"
-        url "https://github.com/restic/restic/releases/download/v0.8.3/restic_0.8.3_linux_amd64.bz2"]
-    (->
-     (download url dest)
-     (checksum dest sha :sha256)
-     (exec "bzip2" "-f" "-d" dest)
-     (summary "installing restic done"))))
 ```
+
+Within each function each resource is executed asynchronously, once done the next resource being.
+
+Functions are grouped into namespaces and invoked in parallel:
+
+```clojure
+(defn server
+  [env]
+  (report-n-exit
+   (invoke-all env
+               re-base.rcp.vim
+               re-base.rcp.zfs
+               re-base.rcp.docker
+               re-base.rcp.shell)))
+```
+
+Multiple resources are running concurrently speeding up execution time:
 
 ```bash
 # packer and restic installed at the same time, but still consistent
@@ -60,8 +75,6 @@ $ node re-conf.js
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking packer
 2018-4-8 21:56:11 rosetta debug [:re-conf.cljs.core/invoke] - invoking restic
 ```
-
-Check the [docs](https://re-ops.github.io/re-conf/) for complete resources listing.
 
 # Development
 
