@@ -22,7 +22,7 @@ And not to be:
 
 ## Look and feel
 
-Re-conf use simple functions to describe configuration resources:
+Re-conf use simple functions to describe configuration resources (check [docs](https://re-ops.github.io/re-conf/) complete listing):
 
 ```clojure
 
@@ -32,8 +32,6 @@ Re-conf use simple functions to describe configuration resources:
 
 (package "ghc")
 ```
-
-Check the [docs](https://re-ops.github.io/re-conf/) for complete resources listing.
 
 Functions thread resources using Clojure built in macro:
 
@@ -51,7 +49,7 @@ Functions thread resources using Clojure built in macro:
      (summary "installing packer done"))))
 ```
 
-Within each function each resource is executed asynchronously, once done the next resource being.
+Within each function each resource is executed asynchronously, once done the next resource beings.
 
 Functions are grouped into namespaces and invoked in parallel:
 
