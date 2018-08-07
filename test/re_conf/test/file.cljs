@@ -42,7 +42,9 @@
   (async done
          (go
            (let [set-key (<! (line  "/tmp/2" "key" "foo" " = " :set))
+                 append (<! (line "/tmp/3" "key = value" :present))
                  absent (<! (file "/tmp/2" :absent))]
              (is (not (ok? set-key)))
-             (is (not (ok? absent)))
+             (is (not (ok? append)))
+             (is (ok? absent))
              (done)))))

@@ -43,8 +43,9 @@
      (if-let [e (error? (<! (check-file f)))]
        {:error e}
        (if (includes? (io/slurp f) s)
-         {:ok (<< "~{f} contains ~{s}")}
-         {:error (<< "~{f} does not contain ~{s}")}))))
+         {:ok (<< "~{f} contains ~{s}") :present true}
+         {:error (<< "~{f} does not contain ~{s}") :present false}))))
+
   ([c f s]
    (run c #(contains f s))))
 

@@ -51,9 +51,12 @@
   Repo
   (add-repo- [this repo]
     (go
-      (if (:ok (<! (contains "/etc/apt/sources.list" repo)))
-        {:ok (<< "repo ~{repo} is present, skipping") :skip true}
-        (<! (sh "/usr/bin/add-apt-repository" repo "-y")))))
+      (let [{:keys [present error]} (<! (contains dest line))]
+        (if (and error (nil? present))
+          error
+          (if present
+            {:ok (<< "repo ~{repo} is present, skipping") :skip true}
+            (<! (sh "/usr/bin/add-apt-repository" repo "-y")))))))
 
   (rm-repo [this repo]
     (go

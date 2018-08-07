@@ -199,13 +199,15 @@
             (io-fs/awriteFile dest (join "\n" filtered) {:override true})
             (<< "removed ~{filtered} from ~{dest}"))))))))
 
-(defn- add-line
-  "Append a line to a file"
+(defn- add-line "Append a line to a file"
   [dest line]
   (go
-    (if (:ok (<! (contains dest line)))
-      {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
-      (<! (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))
+    (let [{:keys [present error]} (<! (contains dest line))]
+      (if (and error (nil? present))
+        error
+        (if present
+          {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
+          (<!  (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
 
 (defn- set-key [k v sep]
   (fn [line]
