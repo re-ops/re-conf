@@ -3,7 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.resources.common :refer (run)]
+   [re-conf.resources.common :refer (run error? obj->clj)]
    [clojure.string :refer (includes?)]
    [cljs.core.async :as async :refer [<! go]]
    [cljs-node-io.core :as io]
@@ -40,9 +40,11 @@
   "Check that a file contains string spec"
   ([f s]
    (go
-     (if (includes? (io/slurp f) s)
-       {:ok (<< "~{f} contains ~{s}")}
-       {:error (<< "~{f} does not contain ~{s}")})))
+     (if-let [e (error? (<! (check-file f)))]
+       {:error e}
+       (if (includes? (io/slurp f) s)
+         {:ok (<< "~{f} contains ~{s}")}
+         {:error (<< "~{f} does not contain ~{s}")}))))
   ([c f s]
    (run c #(contains f s))))
 
@@ -55,3 +57,4 @@
       (if (nil? err)
         {:ok (assoc (obj->clj stat) :mode prms)}
         {:error err}))))
+

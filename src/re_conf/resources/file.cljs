@@ -5,7 +5,7 @@
   (:require
    [clojure.string :refer (split-lines join split)]
    [re-conf.resources.log :refer (info debug error channel?)]
-   [re-conf.resources.common :refer (run obj->clj)]
+   [re-conf.resources.common :refer (run obj->clj error?)]
    [re-conf.resources.shell :refer (sh)]
    [re-conf.resources.log :refer (info)]
    [re-conf.spec.file :refer (check-link check-dir check-file contains)]
@@ -216,14 +216,16 @@
 
 (defn- set-line [dest k v sep]
   (go
-    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
-      (if err
-        {:error err}
-        (let [edited (map (set-key k v sep)  (split-lines lines))]
-          (<!
-           (translate
-            (io-fs/awriteFile dest (join "\n" edited) {:override true})
-            (<< "set ~{k}~{sep}~{v}"))))))))
+    (if-let [e (error? (<! (check-file dest)))]
+      {:error e}
+      (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+        (if err
+          {:error err}
+          (let [edited (map (set-key k v sep)  (split-lines lines))]
+            (<!
+             (translate
+              (io-fs/awriteFile dest (join "\n" edited) {:override true})
+              (<< "set ~{k}~{sep}~{v}")))))))))
 
 (defn line-eq
   "line equal predicate"
@@ -255,3 +257,8 @@
        (run ch #(apply (fns state) args))
        (apply (fns state) args)))))
 
+(comment
+  (info (line "/tmp/elasticsearch.yml" "network.host: 0.0.0.0\n" :present) ::line)
+  (info (line "/tmp/elasticsearch.yml" (<< "cluster.name: cluster\n") :present) ::line)
+  (info (line "/tmp/elasticsearch.yml" (<< "node.name: node\n") :present) ::line)
+  (info (line "/etc/elasticsearch/elasticsearch.yml" "path.data:" "1" " " :set) ::set))

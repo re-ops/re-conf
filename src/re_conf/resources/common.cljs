@@ -4,6 +4,13 @@
    [re-conf.resources.log :refer (info debug error)]
    [cljs.core.async :as async :refer [<! go]]))
 
+(defn ok?  [m]
+  (contains? m :ok))
+
+(defn error? [m]
+  (when-not (ok? m)
+    (:error m)))
+
 (def process (js/require "process"))
 
 (defn profile [f]
@@ -30,3 +37,4 @@
             result
             (assoc result (keyword k) v))))
       (reduce {} (.getKeys goog/object obj))))
+

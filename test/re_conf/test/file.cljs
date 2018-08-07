@@ -3,13 +3,12 @@
    [cljs-node-io.fs :refer (adir?)]
    [cljs.core.async :as async :refer [<! go]]
    [re-conf.resources.file :refer (chown chmod directory line file)]
+   [re-conf.resources.common :refer (ok?)]
+   [re-conf.resources.log :refer (info)]
    [re-conf.spec.file :refer (stats)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (def fs (js/require "fs"))
-
-(defn ok?  [m]
-  (contains? m :ok))
 
 (deftest directory-modes
   (async done
@@ -37,4 +36,13 @@
              (is (ok? append))
              (is (ok? set-key))
              (is (ok? absent))
+             (done)))))
+
+(deftest missing-file
+  (async done
+         (go
+           (let [set-key (<! (line  "/tmp/2" "key" "foo" " = " :set))
+                 absent (<! (file "/tmp/2" :absent))]
+             (is (not (ok? set-key)))
+             (is (not (ok? absent)))
              (done)))))
