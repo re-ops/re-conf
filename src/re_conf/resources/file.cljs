@@ -204,7 +204,7 @@
   (go
     (let [{:keys [present error]} (<! (contains dest line))]
       (if (and error (nil? present))
-        error
+        {:error error}
         (if present
           {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
           (<!  (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
@@ -258,9 +258,3 @@
      (if ch
        (run ch #(apply (fns state) args))
        (apply (fns state) args)))))
-
-(comment
-  (info (line "/tmp/elasticsearch.yml" "network.host: 0.0.0.0\n" :present) ::line)
-  (info (line "/tmp/elasticsearch.yml" (<< "cluster.name: cluster\n") :present) ::line)
-  (info (line "/tmp/elasticsearch.yml" (<< "node.name: node\n") :present) ::line)
-  (info (line "/etc/elasticsearch/elasticsearch.yml" "path.data:" "1" " " :set) ::set))
