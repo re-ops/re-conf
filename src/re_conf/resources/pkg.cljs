@@ -51,7 +51,7 @@
   Repo
   (add-repo- [this repo]
     (go
-      (let [{:keys [present error]} (<! (contains dest line))]
+      (let [{:keys [present error]} (<! (contains "/etc/apt/sources.list" line))]
         (if (and error (nil? present))
           error
           (if present
