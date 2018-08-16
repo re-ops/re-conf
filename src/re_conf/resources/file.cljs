@@ -6,8 +6,6 @@
    [clojure.string :refer (split-lines join split)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.common :refer (run obj->clj error?)]
-   [re-conf.resources.shell :refer (sh)]
-   [re-conf.resources.log :refer (info)]
    [re-conf.spec.file :refer (check-link check-dir check-file contains)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]

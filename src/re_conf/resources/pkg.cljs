@@ -144,7 +144,7 @@
       (>! (:pipe provider) [f provider args resp])
       (<! resp))))
 
-(defn into-spec [m args]
+(defn- into-spec [m args]
   (if (empty? args)
     m
     (let [a (first args)]
