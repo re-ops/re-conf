@@ -10,3 +10,9 @@
   [user]
   (go
     (<! (sh "/usr/bin/id" "-u" user))))
+
+(defn group-exists?
+  "checks if a group exists"
+  [group]
+  (go
+    (<! (sh "/usr/bin/id" "-g" group))))

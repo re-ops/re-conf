@@ -4,7 +4,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
-   [re-conf.spec.user :refer (user-exists?)]
+   [re-conf.spec.user :refer (user-exists? group-exists?)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.common :refer (run)]
    [cljs.core.async :refer [<! go take!]]
@@ -17,6 +17,21 @@
     (opts :gid) (into ["--gid" (opts :gid)])
     (opts :uid) (into ["--uid" (opts :uid)])
     (opts :home) (into ["--home" (<< "/home/~(second args)")])))
+
+(defn addgroup
+  "Add a user"
+  [name options]
+  (go
+    (let [{:keys [ok]} (<! (group-exists? name))]
+      (if-not ok
+        (<! (apply sh (append-options ["/usr/sbin/addgroup" name] options)))
+        {:ok "group already exists skipping creation"}))))
+
+(defn rmgroup
+  "Remove a group"
+  [name & _]
+  (go
+    (<! (sh "/usr/sbin/delgroup" name))))
 
 (defn adduser
   "Add a user"
@@ -38,7 +53,7 @@
                   :absent rmuser})
 
 (defn user
-  "User management"
+  "User resource"
   ([name]
    (user nil name {} :present))
   ([name state]
@@ -47,3 +62,17 @@
    ((user-states state) name options))
   ([c name state options]
    (run c #(user name state options))))
+
+(def group-states {:present addgroup
+                   :absent rmgroup})
+
+(defn group
+  "Group resource"
+  ([name]
+   (group nil name {} :present))
+  ([name state]
+   (group nil name state {}))
+  ([name state options]
+   ((group-states) name options))
+  ([c name state options]
+   (run c #(group name state options))))
