@@ -73,6 +73,6 @@
   ([name state]
    (group nil name state {}))
   ([name state options]
-   ((group-states) name options))
+   ((group-states state) name options))
   ([c name state options]
    (run c #(group name state options))))
