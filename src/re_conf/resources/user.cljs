@@ -10,8 +10,14 @@
    [cljs.core.async :refer [<! go take!]]
    [re-conf.resources.shell :refer (sh)]))
 
+(defn string-values?
+  "All options must be strings pre condition"
+  [m]
+  (not (empty? (filter string? (vals m)))))
+
 (defn append-options
   [args opts]
+  {:pre [(string-values? opts)]}
   (cond-> args
     (not (opts :home)) (into ["--no-create-home"])
     (opts :gid) (into ["--gid" (opts :gid)])
