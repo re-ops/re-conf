@@ -63,13 +63,24 @@
   "Firewall Rule resource with optional provider and state parameters:
      (rule {:port 22}) ; allow port 22
      (rule {:port 22 :from \"10.0.0.1\"}) ; port from a network
-     (rule \"22\" :present) ; explicit state
-     (rule \"22\" :absent) ; remove rule
+     (rule {:port 22} :absent) ; remove rule
+     (rule {:port 22} :present) ; explicit present
   "
-  ([& args]
-   (let [{:keys [ch rule state provider] :or {provider (ufw) state :present}} (into-spec {} args)
-         fns {:present add :absent delete}]
-     (if ch
-       (run ch #((fns state) provider rule))
-       ((fns state) provider rule)))))
+  [& args]
+  (let [{:keys [ch rule state provider] :or {provider (ufw) state :present}} (into-spec {} args)
+        fns {:present add :absent delete}]
+    (if ch
+      (run ch #((fns state) provider rule))
+      ((fns state) provider rule))))
 
+(defn firewall
+  "Firewall resource management
+     (firewall :present) ; enable firewall
+     (firewall :absent) ; disable firewall
+  "
+  [& args]
+  (let [{:keys [ch state provider] :or {provider (ufw) state :present}} (into-spec {} args)
+        fns {:present enable :absent disable}]
+    (if ch
+      (run ch #((fns state) provider))
+      ((fns state) provider))))
