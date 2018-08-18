@@ -22,7 +22,8 @@
 (defn- ufw-rule
   "ufw add rule syntax from map"
   [m]
-  (match [m]
+  {:pre [(m :port)]}
+  (match [(update m :port str)]
     [{:from f :port p}] ["from" f "to" "any" "port" p]
     [{:from f :to t :port p}] ["from" f "to" t "port" p]
     [{:port p}] [p]))
@@ -54,7 +55,7 @@
     m
     (let [a (first args)]
       (cond
-        (map? a) (into-spec (clojure.core/update m :rule (fn [v] (conj v a))) (rest args))
+        (map? a) (into-spec (assoc m :rule a) (rest args))
         (channel? a) (into-spec (assoc m :ch a) (rest args))
         (keyword? a) (into-spec (assoc m :state a) (rest args))
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
