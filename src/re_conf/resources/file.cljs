@@ -152,9 +152,12 @@
 (defn file
   "File resource:
 
-    (file \"/tmp/bla\" :present) ; touch a file
+    (file \"/tmp/bla\") ; touch a file
+    (file \"/tmp/bla\" :present) ; explicit present
     (file \"/tmp/bla\" :absent) ; remove a file
   "
+  ([dest]
+   (file nil dest :present))
   ([dest state]
    (file nil dest state))
   ([c dest state]
