@@ -4,13 +4,14 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.resources.serialize :refer (call consumer)]
    [clojure.string :refer (join)]
    [re-conf.spec.pkg :refer (fingerprint)]
    [re-conf.resources.download :refer (download)]
    [re-conf.resources.common :refer (run)]
    [re-conf.spec.file :refer (contains)]
    [re-conf.resources.log :refer (info debug error channel?)]
-   [cljs.core.async :refer [put! take! <! >! go go-loop chan]]
+   [cljs.core.async :refer [<! go chan]]
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.shell :refer (sh)]))
 
@@ -102,47 +103,17 @@
       (case platform
         "linux" (<! (sh "/usr/bin/dpkg" "-s" pkg))
         :default  {:error (<< "No matching package provider found for ~{platform}")}))))
-; pipes
 
-(def pipes (atom {:os (chan 10) :gem (chan 10)}))
-
-(defn os-pipe
-  "OS packages pipe"
-  []
-  (:os @pipes))
-
-(defn gem-pipe
-  "gem pipe"
-  []
-  (:gem @pipes))
+(def package-pipe (chan 10))
 
 ; providers
 (defn apt []
-  (Apt. (os-pipe)))
+  (Apt. package-pipe))
 
 (defn pkg []
-  (Pkg. (os-pipe)))
+  (Pkg. package-pipe))
 
 ; consumers
-(defn- gem-consumer [c]
-  (go-loop []
-    (let [[f provider args resp] (<! c)]
-      (debug (<< "running gem ~{f} ~{args}") ::gem-consumer)
-      (>! resp (<! (apply f provider args))))
-    (recur)))
-
-(defn- pkg-consumer [c]
-  (go-loop []
-    (let [[f provider args resp] (<! c)
-          result (<! (apply f provider args))]
-      (>! resp result))
-    (recur)))
-
-(defn- call [f provider & args]
-  (go
-    (let [resp (chan)]
-      (>! (:pipe provider) [f provider args resp])
-      (<! resp))))
 
 (defn- into-spec [m args]
   (if (empty? args)
@@ -244,9 +215,8 @@
      (update))))
 
 (defn initialize
-  "Setup the serializing go loop for package management access"
+  "Setup package resource serializing consumer"
   []
   (go
-    (pkg-consumer (os-pipe))
-    (gem-consumer (gem-pipe))))
+    (consumer package-pipe)))
 

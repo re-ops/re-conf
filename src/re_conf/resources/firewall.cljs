@@ -4,9 +4,10 @@
    [cljs.core.match :refer [match]]
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.resources.serialize :refer (call consumer)]
    [re-conf.resources.common :refer (run)]
    [re-conf.resources.log :refer (info debug error channel?)]
-   [cljs.core.async :refer [<! >! go]]
+   [cljs.core.async :refer [<! >! go chan]]
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.shell :refer (sh)]))
 
@@ -28,7 +29,7 @@
     [{:from f :to t :port p}] ["from" f "to" t "port" p]
     [{:port p}] [p]))
 
-(defrecord Ufw []
+(defrecord Ufw [pipe]
   Firewall
   (enable [this]
     (debug "enable ufw" ::ufw)
@@ -46,9 +47,11 @@
     (debug (<< "delete rule ~{rule}") ::ufw)
     (apply sh (into [ufw-bin "delete"] (ufw-rule rule)))))
 
+(def firewall-pipe (chan 10))
+
 (defn ufw []
   "Ufw provider"
-  (Ufw.))
+  (Ufw. firewall-pipe))
 
 (defn- into-spec [m args]
   (if (empty? args)
@@ -71,8 +74,8 @@
   (let [{:keys [ch rule state provider] :or {provider (ufw) state :present}} (into-spec {} args)
         fns {:present add :absent delete}]
     (if ch
-      (run ch #((fns state) provider rule))
-      ((fns state) provider rule))))
+      (run ch #(call (fns state) provider rule))
+      (call (fns state) provider rule))))
 
 (defn firewall
   "Firewall resource management
@@ -83,5 +86,11 @@
   (let [{:keys [ch state provider] :or {provider (ufw) state :present}} (into-spec {} args)
         fns {:present enable :absent disable}]
     (if ch
-      (run ch #((fns state) provider))
-      ((fns state) provider))))
+      (run ch #(call (fns state) provider))
+      (call (fns state) provider))))
+
+(defn initialize
+  "Setup firewall resource serializing consumer"
+  []
+  (go
+    (consumer firewall-pipe)))
