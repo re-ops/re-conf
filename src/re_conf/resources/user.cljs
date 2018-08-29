@@ -15,6 +15,7 @@
   (cond-> args
     (not (opts :home)) (into ["--no-create-home"])
     (opts :gid) (into ["--gid" (str (opts :gid))])
+    (opts :system) (into ["--system"])
     (opts :uid) (into ["--uid" (str (opts :uid))])
     (opts :home) (into ["--home" (<< "/home/~(second args)")])))
 
