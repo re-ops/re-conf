@@ -38,3 +38,7 @@
   "Current user home directory"
   []
   (str (.-homedir os-)))
+
+(defn hostname
+  []
+  (str (.-hostname os-)))
