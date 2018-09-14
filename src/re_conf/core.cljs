@@ -68,9 +68,9 @@
      * In case of an error returning all errors under error key
      * In case of ok returning all results under ok key
    "
-  [c f es]
+  [c f as]
   (go
-    (let [results (<! (async/into [] (async/merge (map (fn [e] (f e)) es))))]
+    (let [results (<! (async/into [] (async/merge (map (fn [args] (apply f args)) as))))]
       (if-let [error (first (filter :error results))]
         {:error (mapv :error (filter :error results))}
         {:ok (mapv :ok results)}))))
