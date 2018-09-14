@@ -46,11 +46,11 @@
 (defn template
   "Create a file from a mustache template resource:
 
-   (template {:keys ...} \"/home/re-ops/.ssh/autorized-keys\" \"authorized-keys.mustache\")
+    (template \"/home/re-ops/.ssh/autorized-keys\" \"authorized-keys.mustache\" {:keys ...})
    "
-  ([args tmpl dest]
-   (template nil args tmpl dest))
-  ([c args tmpl dest]
+  ([tmpl dest args]
+   (template nil tmpl dest args))
+  ([c tmpl dest args]
    (run c (fn [] (run-template args tmpl dest)))))
 
 (defn- run-copy
