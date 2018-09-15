@@ -3,6 +3,7 @@
    [clojure.core.strint :refer (<<)])
   (:require
    [cuerdas.core :as str]
+   [re-conf.resources.common :refer (ok?)]
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.pkg :as p :refer (initialize)]
    [re-conf.resources.log :refer (info debug error)]
@@ -70,10 +71,13 @@
    "
   [c f as]
   (go
-    (let [results (<! (async/into [] (async/merge (map (fn [args] (apply f args)) as))))]
-      (if-let [error (first (filter :error results))]
-        {:error (mapv :error (filter :error results))}
-        {:ok (mapv :ok results)}))))
+    (let [pre (<! c)]
+      (if-not (ok? pre)
+        pre
+        (let [results (<! (async/into [] (async/merge (map (fn [args] (apply f args)) as))))]
+          (if-let [error (first (filter :error results))]
+            {:error (mapv :error (filter :error results))}
+            {:ok (mapv :ok results)}))))))
 
 (comment
   (initialize)
