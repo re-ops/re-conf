@@ -127,9 +127,12 @@
 (defn directory
   "Directory resource:
 
-    (directory \"/tmp/bla\" :present) ; create directory
+    (directory \"/tmp/bla\") ; create directory
+    (directory \"/tmp/bla\" :present) ; explicit create
     (directory \"/tmp/bla\" :absent) ; remove directory
   "
+  ([dest]
+   (directory nil dest :present))
   ([dest state]
    (directory nil dest state))
   ([c dest state]
