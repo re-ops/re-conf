@@ -64,20 +64,25 @@
         (error (<< "provision script failed due to ~(count errors) errors, check error logs exit 1.") ::exit)
         (.exit process 1)))))
 
-(defn map*
-  "Take a resource and map it on a sequence:
+(defn apply*
+  "Take a resource and apply it on a sequence:
      * In case of an error returning all errors under error key
      * In case of ok returning all results under ok key
+
+     (apply* c directory [\"tmp/1\" \"/tmp/2\"])
+     (apply* c directory (fn [f] [f :absent]) [\"tmp/1\" \"/tmp/2\"]) ; transforming args function
    "
-  [c f as]
-  (go
-    (let [pre (<! c)]
-      (if-not (ok? pre)
-        pre
-        (let [results (<! (async/into [] (async/merge (map (fn [args] (apply f args)) as))))]
-          (if-let [error (first (filter :error results))]
-            {:error (mapv :error (filter :error results))}
-            {:ok (mapv :ok results)}))))))
+  ([c r as]
+   (go
+     (let [pre (<! c)]
+       (if-not (ok? pre)
+         pre
+         (let [results (<! (async/into [] (async/merge (map (fn [args] (apply r args)) as))))]
+           (if-let [error (first (filter :error results))]
+             {:error (mapv :error (filter :error results))}
+             {:ok (mapv :ok results)}))))))
+  ([c r f as]
+   (apply* c r (map f as))))
 
 (comment
   (initialize)
