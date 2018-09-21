@@ -15,4 +15,4 @@
   "checks if a group exists"
   [group]
   (go
-    (<! (sh "/usr/bin/id" "-g" group))))
+    (<! (sh "/usr/bin/getent" "group" group))))
