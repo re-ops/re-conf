@@ -13,7 +13,8 @@
   (stop [this service])
   (start [this service])
   (restart [this service])
-  (disable [this service]))
+  (disable [this service])
+  (enable [this service]))
 
 (def systemd-bin "/usr/sbin/service")
 
@@ -44,7 +45,12 @@
   (disable [this service]
     (debug "disabling service" ::systemd)
     (go
-      (<! (sh (<! (sysctl)) "disable" (<< "~{service}.service"))))))
+      (<! (sh (<! (sysctl)) "disable" (<< "~{service}.service")))))
+
+  (enable [this service]
+    (debug "enabling service" ::systemd)
+    (go
+      (<! (sh (<! (sysctl)) "enable" (<< "~{service}.service"))))))
 
 (def systemd (Systemd.))
 
@@ -62,7 +68,7 @@
   "Service resource with optional provider and state parameters"
   ([& args]
    (let [{:keys [ch name state provider] :or {provider systemd state :restart}} (into-spec {} args)
-         fns {:start start :stop stop :disable disable :restart restart}]
+         fns {:start start :stop stop :disable disable :enable enable :restart restart}]
      (if ch
        (run ch #((fns state) provider name))
        ((fns state) provider name)))))
