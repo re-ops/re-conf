@@ -3,6 +3,7 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [re-conf.resources.shell :refer (exec)]
    [clojure.string :refer (split-lines join split)]
    [re-conf.resources.log :refer (info debug error channel?)]
    [re-conf.resources.common :refer (run obj->clj error?)]
@@ -39,7 +40,7 @@
             {:error {:message "reading template source failed" :error esp :source tmpl}}
             {:ok {:message "writing template source success" :template tmpl :dest dest}}))))))
 
-(defn- options [args opts]
+(defn- append-options [args opts]
   (cond->> args
     (opts :recursive) (into args ["-R"])))
 
@@ -77,12 +78,15 @@
 (defn chown
   "Change file/directory owner using uid & gid resource:
 
-    (chown \"/home\"/re-ops/.ssh\" 1001 1002)
+    (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\"); using user/group
+    (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\" {:recursive true}); chown -R
    "
-  ([dest uid gid]
-   (translate (io-fs/achown dest uid gid) (<< "~{dest} uid:gid is set to ~{uid}:~{gid}")))
-  ([c dest uid gid]
-   (run c #(chown dest uid gid))))
+  ([dest u g]
+   (chown dest u g {}))
+  ([dest u g options]
+   (apply exec (append-options ["/bin/chown" name (<< "~{u}:~{g}") dest] options)))
+  ([c dest u g options]
+   (run c #(chown dest u g))))
 
 (defn rename
   "Rename a file/directory resource:
@@ -98,11 +102,14 @@
   "Change file/directory mode resource:
 
     (chmod \"/home\"/re-ops/.ssh\" \"0777\")
+    (chmod \"/home\"/re-ops/.ssh\" \"0777\" {:recursive true})
   "
   ([dest mode]
-   (translate (io-fs/achmod dest mode) (<< "~{dest} mode is set to ~{mode}")))
-  ([c dest mode]
-   (run c #(chmod dest mode))))
+   (chmod dest mode {}))
+  ([dest mode options]
+   (apply exec (append-options ["/bin/chmod" mode dest] options)))
+  ([c dest mode options]
+   (run c #(chmod dest mode options))))
 
 (defn- rmdir [d]
   (go
