@@ -83,10 +83,12 @@
    "
   ([dest u g]
    (chown dest u g {}))
-  ([dest u g options]
-   (apply exec (append-options ["/bin/chown" name (<< "~{u}:~{g}") dest] options)))
+  ([a b c d]
+   (if (channel? a)
+     (chown a b c d {})
+     (apply exec (append-options ["/bin/chown" (<< "~{b}:~{c}") a] d))))
   ([c dest u g options]
-   (run c #(chown dest u g))))
+   (run c #(chown dest u g options))))
 
 (defn rename
   "Rename a file/directory resource:
@@ -106,8 +108,10 @@
   "
   ([dest mode]
    (chmod dest mode {}))
-  ([dest mode options]
-   (apply exec (append-options ["/bin/chmod" mode dest] options)))
+  ([a b c]
+   (if (channel? a)
+     (chmod a b c {})
+     (apply exec (append-options ["/bin/chmod" b a] c))))
   ([c dest mode options]
    (run c #(chmod dest mode options))))
 
