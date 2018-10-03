@@ -14,7 +14,7 @@
   (async done
          (go
            (let [present (<! (directory "/tmp/2" :present))
-                 mode (<! (chmod "/tmp/2" 0777))
+                 mode (<! (chmod "/tmp/2" "0777"))
                  stat (:ok (<! (stats "/tmp/2")))
                  dir (<! (adir? "/tmp/2"))
                  absent (<! (directory "/tmp/2" :absent))]
