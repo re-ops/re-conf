@@ -3,12 +3,20 @@
   (:require-macros
    [clojure.core.strint :refer (<<)])
   (:require
+   [cljs.spec.alpha :as s]
    [re-conf.resources.common :refer (run error? obj->clj)]
    [clojure.string :refer (includes?)]
    [cljs.core.async :as async :refer [<! go]]
    [cljs-node-io.core :as io]
    [cljs-node-io.fs :as io-fs]))
 
+; specs
+
+(s/def mode string?)
+
+(s/def file string?)
+
+; check functions
 (defn check-file
   "File check spec"
   [d]
