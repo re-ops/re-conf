@@ -44,16 +44,6 @@
   (cond->> args
     (opts :recursive) (into args ["-R"])))
 
-(defn template
-  "Create a file from a mustache template resource:
-
-    (template \"/home/re-ops/.ssh/autorized-keys\" \"authorized-keys.mustache\" {:keys ...})
-   "
-  ([tmpl dest args]
-   (template nil tmpl dest args))
-  ([c tmpl dest args]
-   (run c (fn [] (run-template args tmpl dest)))))
-
 (defn- run-copy
   [src dest]
   (let [c (chan)]
@@ -64,6 +54,111 @@
                    (put! c {:ok (<< "copied ~{src} to ~{dest}")}))))
 
     c))
+
+(defn- rmdir [d]
+  (go
+    (if-not (:exists (<! (check-dir d)))
+      [nil (<< "folder ~{d} missing, skipping rmdir")]
+      (let [[err v]  (<! (io-fs/areaddir d))]
+        (if err
+          [err]
+          (if (empty? v)
+            (<! (io-fs/armdir d))
+            (<! (io-fs/arm-r d))))))))
+
+(defn- mkdir [d]
+  (go
+    (if-not (:exists (<! (check-dir d)))
+      (<! (io-fs/amkdir d))
+      [nil (<< "folder ~{d} exists, skipping mkdir")])))
+
+(defn- touch [dest]
+  (go
+    (if-not (:exists (<! (check-file dest)))
+      (<! (io-fs/atouch dest))
+      [nil (<< "file ~{dest} exists, skipping touch")])))
+
+(defn- rmfile [dest]
+  (go
+    (if (:exists (<! (check-file dest)))
+      (<! (io-fs/arm dest))
+      [nil (<< "file ~{dest} does not exists, skipping file rm")])))
+
+(defn- mklink
+  [src target]
+  (go
+    (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
+      (if-not exists
+        (<! (io-fs/asymlink src target))
+        (if ok
+          [nil ok]
+          [error])))))
+
+(defn- add-line "Append a line to a file"
+  [dest line]
+  (go
+    (let [{:keys [present error]} (<! (contains dest line))]
+      (if (and error (nil? present))
+        {:error error}
+        (if present
+          {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
+          (<!  (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
+
+(defn- set-key [k v sep]
+  (fn [line]
+    (let [[f & _] (split line (re-pattern sep))]
+      (if (= f k)
+        (str k sep v)
+        line))))
+
+(defn- set-line [dest k v sep]
+  (go
+    (if-let [e (error? (<! (check-file dest)))]
+      {:error e}
+      (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+        (if err
+          {:error err}
+          (let [edited (map (set-key k v sep)  (split-lines lines))]
+            (<!
+             (translate
+              (io-fs/awriteFile dest (join "\n" edited) {:override true})
+              (<< "set ~{k}~{sep}~{v}")))))))))
+
+(defn line-eq
+  "line equal predicate"
+  [line]
+  (fn [curr] (not (= curr line))))
+
+(defn into-spec [m args]
+  (if (empty? args)
+    m
+    (let [a (first args)]
+      (cond
+        (or (fn? a) (string? a)) (into-spec (clojure.core/update m :args (fn [v] (conj v a))) (rest args))
+        (channel? a) (into-spec (assoc m :ch a) (rest args))
+        (keyword? a) (into-spec (assoc m :state a) (rest args))))))
+
+(defn- rm-line [dest f]
+  (go
+    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+      (if err
+        {:error err}
+        (let [filtered (filter f (split-lines lines))]
+          (<!
+           (translate
+            (io-fs/awriteFile dest (join "\n" filtered) {:override true})
+            (<< "removed ~{filtered} from ~{dest}"))))))))
+;resources
+
+(defn template
+  "Create a file from a mustache template resource:
+
+    (template \"/home/re-ops/.ssh/autorized-keys\" \"authorized-keys.mustache\" {:keys ...})
+   "
+  ([tmpl dest args]
+   (template nil tmpl dest args))
+  ([c tmpl dest args]
+   (run c (fn [] (run-template args tmpl dest)))))
 
 (defn copy
   "Copy a file resource:
@@ -115,23 +210,6 @@
   ([c dest mode options]
    (run c #(chmod dest mode options))))
 
-(defn- rmdir [d]
-  (go
-    (if-not (:exists (<! (check-dir d)))
-      [nil (<< "folder ~{d} missing, skipping rmdir")]
-      (let [[err v]  (<! (io-fs/areaddir d))]
-        (if err
-          [err]
-          (if (empty? v)
-            (<! (io-fs/armdir d))
-            (<! (io-fs/arm-r d))))))))
-
-(defn- mkdir [d]
-  (go
-    (if-not (:exists (<! (check-dir d)))
-      (<! (io-fs/amkdir d))
-      [nil (<< "folder ~{d} exists, skipping mkdir")])))
-
 (def directory-states {:present mkdir
                        :absent rmdir})
 
@@ -149,18 +227,6 @@
   ([c dest state]
    (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
 
-(defn- touch [dest]
-  (go
-    (if-not (:exists (<! (check-file dest)))
-      (<! (io-fs/atouch dest))
-      [nil (<< "file ~{dest} exists, skipping touch")])))
-
-(defn- rmfile [dest]
-  (go
-    (if (:exists (<! (check-file dest)))
-      (<! (io-fs/arm dest))
-      [nil (<< "file ~{dest} does not exists, skipping file rm")])))
-
 (def file-states {:present touch
                   :absent rmfile})
 (defn file
@@ -177,16 +243,6 @@
   ([c dest state]
    (run c #(translate ((file-states state) dest) (<< "File ~{dest} is ~(name state)")))))
 
-(defn- mklink
-  [src target]
-  (go
-    (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
-      (if-not exists
-        (<! (io-fs/asymlink src target))
-        (if ok
-          [nil ok]
-          [error])))))
-
 (def symlink-states {:present mklink})
 
 (defn symlink
@@ -202,61 +258,6 @@
     (<< "Symlink from ~{src} to ~{target} is ~(name state)")))
   ([c src target state]
    (run c #(symlink src target state))))
-
-(defn- rm-line [dest f]
-  (go
-    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
-      (if err
-        {:error err}
-        (let [filtered (filter f (split-lines lines))]
-          (<!
-           (translate
-            (io-fs/awriteFile dest (join "\n" filtered) {:override true})
-            (<< "removed ~{filtered} from ~{dest}"))))))))
-
-(defn- add-line "Append a line to a file"
-  [dest line]
-  (go
-    (let [{:keys [present error]} (<! (contains dest line))]
-      (if (and error (nil? present))
-        {:error error}
-        (if present
-          {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
-          (<!  (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
-
-(defn- set-key [k v sep]
-  (fn [line]
-    (let [[f & _] (split line (re-pattern sep))]
-      (if (= f k)
-        (str k sep v)
-        line))))
-
-(defn- set-line [dest k v sep]
-  (go
-    (if-let [e (error? (<! (check-file dest)))]
-      {:error e}
-      (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
-        (if err
-          {:error err}
-          (let [edited (map (set-key k v sep)  (split-lines lines))]
-            (<!
-             (translate
-              (io-fs/awriteFile dest (join "\n" edited) {:override true})
-              (<< "set ~{k}~{sep}~{v}")))))))))
-
-(defn line-eq
-  "line equal predicate"
-  [line]
-  (fn [curr] (not (= curr line))))
-
-(defn into-spec [m args]
-  (if (empty? args)
-    m
-    (let [a (first args)]
-      (cond
-        (or (fn? a) (string? a)) (into-spec (clojure.core/update m :args (fn [v] (conj v a))) (rest args))
-        (channel? a) (into-spec (assoc m :ch a) (rest args))
-        (keyword? a) (into-spec (assoc m :state a) (rest args))))))
 
 (defn line
   "File line resource either append or remove lines:
