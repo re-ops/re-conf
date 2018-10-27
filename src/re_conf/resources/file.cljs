@@ -102,7 +102,7 @@
         {:error error}
         (if present
           {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
-          (<!  (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
+          (<! (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
 
 (defn- set-key [k v sep]
   (fn [line]
@@ -176,8 +176,10 @@
     (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\"); using user/group
     (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\" {:recursive true}); chown -R
    "
-  ([dest u g]
-   (chown dest u g {}))
+  ([a u g]
+   (if (channel? a)
+     (go {:error "missing group"})
+     (chown a u g {})))
   ([a b c d]
    (if (channel? a)
      (chown a b c d {})
