@@ -8,7 +8,7 @@
    [cljs.nodejs :as nodejs]
    [re-conf.resources.common :refer (run)]
    [cljs.core.match :refer-macros  [match]]
-   [cljs.core.async :as async :refer [put! <! >! chan alts! timeout take!]]))
+   [cljs.core.async :as async :refer [put! <! chan alts! timeout take!]]))
 
 (def spawn (.-spawn (js/require "child_process")))
 
