@@ -13,10 +13,8 @@
   [profiles]
   [["-d" "--debug" "debug (include profiling information)" :default false]
    ["-e" "--environment ENVIRONMENT" "environment file"
-    :default "resources/dev.edn"
-    :validate [#(.existsSync fs %) "environment file missing"]]
+    :validate [#(.existsSync fs %) "environment file is missing make sure that path is correct"]]
    ["-p" "--profile PROFILE" (<< "profile, one of ~{profiles}")
-    :default (first profiles)
     :validate [#(profiles (keyword %)) (<< "profile must be one of ~{profiles}")]]
    ["-h" "--help"]])
 
@@ -24,11 +22,17 @@
   "catch help and errors"
   [{:keys [summary errors options] :as m}]
   (when-let [help (options :help)]
-    (println help)
+    (println summary)
     (.exit process 0))
   (when-not (empty? errors)
     (doseq [e errors]
       (println e))
+    (.exit process 1))
+  (when-not (contains? options :environment)
+    (println "environment is missing")
+    (.exit process 1))
+  (when-not (contains? options :profile)
+    (println "profile is missing")
     (.exit process 1))
   (when (options :debug)
     (debug-on))
