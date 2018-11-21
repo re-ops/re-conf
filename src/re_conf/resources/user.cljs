@@ -20,7 +20,7 @@
     (opts :home) (into ["--home" (<< "/home/~(second args)")])))
 
 (defn addgroup
-  "Add a user"
+  "Add a group"
   [name options]
   (go
     (let [{:keys [ok]} (<! (group-exists? name))]
@@ -70,10 +70,13 @@
 (defn group
   "Group resource"
   ([name]
-   (group nil name {} :present))
+   (group nil name :present {}))
   ([name state]
    (group nil name state {}))
-  ([name state options]
-   ((group-states state) name options))
+  ([a b c]
+   (if (channel? a)
+     (group a b c {})
+     ((group-states a) b c)))
   ([c name state options]
    (run c #(group name state options))))
+
