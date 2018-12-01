@@ -1,0 +1,88 @@
+{"level":"info","message":"Provisioning machine using re-base!","ns":":re-base.recipes.main/main","timestamp":"2018-12-01T12:40:01.154Z"}
+{"level":"debug","message":"invoking git","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:01.172Z"}
+{"level":"debug","message":"invoking barbecue","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:01.172Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:40:01.174Z"}
+{"level":"debug","message":{"ok":"Directory /home/re-ops is present","profile":[0,14203511]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:15.315Z"}
+{"level":"debug","message":{"ok":{"template":"resources/git/gitconfig.mustache","dest":"/home/re-ops/.gitconfig","message":"writing template source success"},"profile":[0,19656684]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:15.336Z"}
+{"level":"info","message":"git setup","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:15.338Z"}
+{"level":"debug","message":{"ok":{"exit":0,"out":"Hit:1 http://security.ubuntu.com/ubuntu bionic-security InRelease\nHit:2 http://us.archive.ubuntu.com/ubuntu bionic InRelease\nGet:3 https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu xenial InRelease [2,495 B]\nHit:4 http://us.archive.ubuntu.com/ubuntu bionic-updates InRelease\nHit:5 http://us.archive.ubuntu.com/ubuntu bionic-backports InRelease\nGet:6 https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu xenial/main i386 Packages [748 B]\nGet:7 https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu xenial/main amd64 Packages [2,391 B]\nFetched 5,634 B in 2s (3,076 B/s)\nReading package lists...\n"},"profile":[4,697498519]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:22.121Z"}
+{"level":"debug","message":{"ok":{"exit":0,"out":"Get:1 https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu xenial InRelease [2,495 B]\nHit:2 http://us.archive.ubuntu.com/ubuntu bionic InRelease\nHit:3 http://security.ubuntu.com/ubuntu bionic-security InRelease\nHit:4 http://us.archive.ubuntu.com/ubuntu bionic-updates InRelease\nHit:5 http://us.archive.ubuntu.com/ubuntu bionic-backports InRelease\nFetched 2,495 B in 1s (1,815 B/s)\nReading package lists...\n"},"profile":[3,275494489]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:25.397Z"}
+{"level":"info","message":"barbecue setup","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:25.398Z"}
+{"level":"debug","message":"invoking vim","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.400Z"}
+{"level":"debug","message":"invoking dot_vim","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.400Z"}
+{"level":"debug","message":"invoking powerline","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.401Z"}
+{"level":"debug","message":"invoking tmux","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.401Z"}
+{"level":"debug","message":"invoking zsh","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.402Z"}
+{"level":"debug","message":"invoking oh_my_zsh","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.402Z"}
+{"level":"debug","message":"invoking dot_files","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.402Z"}
+{"level":"debug","message":"invoking ack","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.403Z"}
+{"level":"debug","message":"invoking rlwrap","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.403Z"}
+{"level":"debug","message":"invoking elasticsearch","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.404Z"}
+{"level":"debug","message":"invoking docker","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.404Z"}
+{"level":"debug","message":"invoking compose","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.404Z"}
+{"level":"debug","message":"invoking packer","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.405Z"}
+{"level":"debug","message":"invoking lein","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.405Z"}
+{"level":"debug","message":"invoking jdk","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.406Z"}
+{"level":"debug","message":"invoking build_essential","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.406Z"}
+{"level":"debug","message":"invoking security_tools","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.407Z"}
+{"level":"debug","message":"invoking hardening","ns":":re-conf.core/invoke","timestamp":"2018-12-01T12:40:25.407Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:40:25.428Z"}
+{"level":"debug","message":"add rule {:port 22}","ns":":re-conf.resources.firewall/ufw","timestamp":"2018-12-01T12:40:25.564Z"}
+{"level":"debug","message":{"ok":"Directory /home/re-ops/.fonts is present","profile":[0,239439061]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:25.668Z"}
+{"level":"info","message":"docker elasticsearch setup","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:25.687Z"}
+{"level":"debug","message":{"ok":"file downloaded","profile":[0,414878073]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:25.844Z"}
+{"level":"debug","message":{"ok":"file downloaded","profile":[0,664168985]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:26.179Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,7789488]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:26.188Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,8824128]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:26.189Z"}
+{"level":"info","message":"lein done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:26.189Z"}
+{"level":"debug","message":{"ok":{"exit":0,"out":"Rules updated\nRules updated (v6)\n"},"profile":[0,677914961]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:26.238Z"}
+{"level":"debug","message":"enable ufw","ns":":re-conf.resources.firewall/ufw","timestamp":"2018-12-01T12:40:26.239Z"}
+{"level":"debug","message":{"ok":{"exit":0,"out":"Firewall is active and enabled on system startup\n"},"profile":[0,772542234]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:27.012Z"}
+{"level":"debug","message":{"ok":{"exit":0,"out":"net.ipv4.conf.all.rp_filter = 1\nnet.ipv4.conf.default.rp_filter = 1\nnet.ipv4.icmp_echo_ignore_broadcasts = 1\nnet.ipv4.conf.all.accept_source_route = 0\nnet.ipv6.conf.all.accept_source_route = 0\nnet.ipv4.conf.default.accept_source_route = 0\nnet.ipv6.conf.default.accept_source_route = 0\nnet.ipv4.conf.all.send_redirects = 0\nnet.ipv4.conf.default.send_redirects = 0\nnet.ipv4.tcp_syncookies = 1\nnet.ipv4.tcp_max_syn_backlog = 2048\nnet.ipv4.tcp_synack_retries = 2\nnet.ipv4.tcp_syn_retries = 5\nnet.ipv4.conf.all.log_martians = 1\nnet.ipv4.icmp_ignore_bogus_error_responses = 1\nnet.ipv4.conf.all.accept_redirects = 0\nnet.ipv6.conf.all.accept_redirects = 0\nnet.ipv4.conf.default.accept_redirects = 0\nnet.ipv6.conf.default.accept_redirects = 0\nnet.ipv4.icmp_echo_ignore_all = 1\n"},"profile":[0,9856314]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:27.023Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,9493551]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:28.582Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,10821981]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:28.583Z"}
+{"level":"info","message":"dot-files setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:28.584Z"}
+{"level":"debug","message":{"ok":"file downloaded","profile":[4,306603509]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:29.820Z"}
+{"level":"debug","message":{"ok":{"message":"checksum matches","sum":"254cf648a638f7ebd37dc1b334abe940da30b30ac3465b6e0a9ad59829932fa3","expected":"254cf648a638f7ebd37dc1b334abe940da30b30ac3465b6e0a9ad59829932fa3"},"profile":[0,176130550]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:29.997Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,8330685]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:34.020Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,10324176]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:34.022Z"}
+{"level":"debug","message":{"ok":"Symlink from /home/re-ops/.vim/.vimrc to /home/re-ops/.vimrc is present","profile":[0,3875659]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:34.027Z"}
+{"level":"info","message":"dot-vim done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:34.028Z"}
+{"level":"debug","message":{"ok":{"exit":0,"err":"Cloning into '/home/re-ops/.fonts/ubuntu-mono-powerline'...\n"},"profile":[9,766578145]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:35.436Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,5472798]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:35.442Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,6401447]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:35.443Z"}
+{"level":"info","message":"powerline done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:35.443Z"}
+{"level":"debug","message":{"ok":"file downloaded","profile":[11,142077118]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:36.659Z"}
+{"level":"debug","message":{"ok":{"message":"checksum matches","sum":"8a11713e11ed73abcb3feb88cd8b5674b3320ba33b22b2ba37915b4ecffdf042","expected":"8a11713e11ed73abcb3feb88cd8b5674b3320ba33b22b2ba37915b4ecffdf042"},"profile":[0,94907531]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:36.755Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,9288497]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:36.765Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,10297993]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:36.766Z"}
+{"level":"info","message":"docker compsoe setup","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:36.766Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,11421931]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:39.970Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,12413883]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:39.971Z"}
+{"level":"debug","message":{"ok":"Symlink from /home/re-ops/.oh-my-zsh/.zshrc to /home/re-ops/.zshrc is present","profile":[0,2811937]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:39.974Z"}
+{"level":"info","message":"oh-my-zsh setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:39.975Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:40:47.621Z"}
+{"level":"info","message":"vim done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:47.622Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:40:53.646Z"}
+{"level":"debug","message":{"ok":{"exit":0,"err":"Cloning into '/home/re-ops/.tmux'...\n"},"profile":[1,54621631]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:54.712Z"}
+{"level":"debug","message":{"ok":"Directory /home/re-ops/.tmux/plugins/ is present","profile":[0,1991991]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:54.715Z"}
+{"level":"debug","message":{"ok":{"exit":0,"err":"Cloning into '/home/re-ops/.tmux/plugins/tpm'...\n"},"profile":[1,805627039]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:56.522Z"}
+{"level":"debug","message":{"ok":"Symlink from /home/re-ops/.tmux/.tmux.conf to /home/re-ops/.tmux.conf is present","profile":[0,1822875]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:56.526Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,10341286]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:56.538Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,12394893]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:56.539Z"}
+{"level":"debug","message":{"ok":{"exit":0,"err":"Cloning into '/home/re-ops/.tmuxinator.git'...\n"},"profile":[1,246915087]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:57.788Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,8437475]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:57.798Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,10226137]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:40:57.799Z"}
+{"level":"info","message":"tmux setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:40:57.800Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:41:01.281Z"}
+{"level":"debug","message":{"present":false,"error":"/etc/passwd does not contain re-ops:/bin/zsh","profile":[0,2464415]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:41:01.291Z"}
+{"level":"debug","message":{"ok":{"exit":0},"profile":[0,139445451]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:41:01.432Z"}
+{"level":"info","message":"zsh setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:41:01.433Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:41:05.911Z"}
+{"level":"debug","message":{"ok":"Symlink from /home/re-ops/.dots/.ackrc to /home/re-ops/.ackrc is present","profile":[0,1135688]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:41:05.920Z"}
+{"level":"info","message":"ack setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:41:05.921Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:41:10.216Z"}
+{"level":"debug","message":{"ok":"Symlink from /home/re-ops/.dots/.inputrc to /home/re-ops/.inputrc is present","profile":[0,2173805]},"ns":":re-conf.resources.common/profile","timestamp":"2018-12-01T12:41:10.227Z"}
+{"level":"info","message":"rlwrap setup done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:41:10.230Z"}
+{"level":"debug","message":"running install","ns":":re-conf.resources.pkg/apt","timestamp":"2018-12-01T12:42:36.314Z"}
+{"level":"info","message":"jdk done","ns":":re-conf.resources.output/summary-ok","timestamp":"2018-12-01T12:42:36.315Z"}
