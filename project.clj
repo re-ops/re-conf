@@ -26,7 +26,12 @@
                  [cljstache "2.0.1"]
 
                  ; arg parsing
-                 [org.clojure/tools.cli "0.4.0"] ]
+                 [org.clojure/tools.cli "0.4.0"]
+
+                 ; profiling
+                 [metasoarous/oz "1.3.1"]
+                 [org.clojure/data.json "0.2.6"] ]
+
   :npm {
         :dependencies [
           ["request" "2.85.0"]
@@ -42,6 +47,7 @@
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-figwheel "0.5.14"]
+            [venantius/ultra "0.5.2"]
             [lein-cljfmt "0.5.7"]
             [lein-set-version "0.3.0"]
             [lein-tag "0.1.0"]
