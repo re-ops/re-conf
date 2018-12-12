@@ -13,6 +13,14 @@
 
 (def process (js/require "process"))
 
+(defn function-name
+  [f]
+  (let [parts (clojure.string/split (str (js/Object f)) #"\s")
+        raw (first (clojure.string/split (second parts) #"\("))]
+    (-> raw
+        (clojure.string/replace #"\$" ".")
+        (clojure.string/replace #"\_" "-"))))
+
 (defn profile [f]
   (go
     (let [start (.hrtime process)
