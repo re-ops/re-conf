@@ -7,4 +7,6 @@
 
 (nodejs/enable-util-print!)
 
-(run-tests 're-conf.test.file)
+(run-tests
+ 're-conf.test.pkg
+ 're-conf.test.file)
