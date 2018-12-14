@@ -13,13 +13,43 @@
               :color {:field "col" :type "nominal"}}
    :mark "line"})
 
+(defn cleanup
+  "keep only analysis friendly keys"
+  [rs]
+  (map
+   (fn [{:keys [message timestamp]}]
+     (merge (select-keys message #{:function :profile}) {:timestamp timestamp})) rs))
+
+(defn by-function
+  "group by function type"
+  [rs]
+  (group-by :function rs))
+
+(defn logs [f]
+  (map #(json/parse-string % true) (clojure.string/split (slurp f) #"\n")))
+
+(defn resources
+  "grab profiled resources "
+  [lines]
+  (filter (fn [m] (get-in m [:message :function])) lines))
+
+(defn into-group [rs]
+  (map-indexed
+   (fn [i m]
+     (let [{:keys [function profile timestamp]} m [n c] profile]
+       {:x i :y (clojure.edn/read-string (str n "." c)) :col function}))
+   rs))
+
 (defn load- []
-  (filter identity
-          (map-indexed
-           (fn [i m] (let [[n c] (get-in m [:message :profile])]
-                       (when n {:x i :y (clojure.edn/read-string (str n "." c))})))
-           (map #(json/parse-string % true) (clojure.string/split (slurp "example.json") #"\n")))))
+  (into-group (cleanup (resources (logs "example.json")))))
+
+(def line-plot
+  {:data {:values (load-)}
+   :encoding {:x {:field "x"}
+              :y {:field "y"}
+              :color {:field "col" :type "nominal"}}
+   :mark "line"})
 
 (comment
   (start-server)
-  (oz/v! (line-plot (load-))))
+  (oz/v! line-plot))
