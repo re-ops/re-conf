@@ -21,10 +21,10 @@
         (clojure.string/replace #"\$" ".")
         (clojure.string/replace #"\_" "-"))))
 
-(defn profile [f]
+(defn profile [f args]
   (go
     (let [start (.hrtime process)
-          r (<! (f))
+          r (<! (apply f args))
           end (.hrtime process start)]
       (debug (assoc r :profile end :function (function-name f)) ::profile)
       r)))
@@ -33,7 +33,7 @@
   (go
     (let [r (if c (<! c) {:ok true})]
       (if (:ok r)
-        (<! (profile (apply f args)))
+        (<! (profile f args))
         r))))
 
 (defn obj->clj
