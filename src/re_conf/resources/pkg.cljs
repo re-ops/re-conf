@@ -195,17 +195,20 @@
   ([file]
    (call key-file- (apt) file))
   ([c file]
-   (run c #(key-file file))))
+   (run c key-file [file])))
+
+(defn key-server-import
+  [server id]
+  (call key-server- (apt) server id))
 
 (defn key-server
   "Import a gpg apt key from a gpg server resource:
-
      (key-server \"keyserver.ubuntu.com\" \"42ED3C30B8C9F76BC85AC1EC8B095396E29035F0\")
    "
   ([server id]
-   (call key-server- (apt) server id))
+   (run nil key-server-import [server id]))
   ([c server id]
-   (run c #(key-server server id))))
+   (run c key-server-import [server id])))
 
 (defn add-repo
   "Add repo, gpg key and fingerprint:
