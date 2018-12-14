@@ -1,4 +1,4 @@
-(defproject re-conf "0.3.10"
+(defproject re-conf "0.3.11"
   :description "Functional configuration management using Clojure(script)"
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
@@ -63,7 +63,7 @@
               :source-paths ["src" "re-base/src"]
               :figwheel true
               :compiler {
-                :main re-conf.core
+                :main re-conf.main
                 :asset-path "target/js/compiled/dev"
                 :output-to "target/js/compiled/re-conf.js"
                 :output-dir "target/js/compiled/dev"

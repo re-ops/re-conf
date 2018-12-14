@@ -56,33 +56,41 @@
     c))
 
 (defn- rmdir [d]
-  (go
-    (if-not (:exists (<! (check-dir d)))
-      [nil (<< "folder ~{d} missing, skipping rmdir")]
-      (let [[err v]  (<! (io-fs/areaddir d))]
-        (if err
-          [err]
-          (if (empty? v)
-            (<! (io-fs/armdir d))
-            (<! (io-fs/arm-r d))))))))
+  (translate
+   (go
+     (if-not (:exists (<! (check-dir d)))
+       [nil (<< "folder ~{d} missing, skipping rmdir")]
+       (let [[err v]  (<! (io-fs/areaddir d))]
+         (if err
+           [err]
+           (if (empty? v)
+             (<! (io-fs/armdir d))
+             (<! (io-fs/arm-r d)))))))
+   (<< "folder ~{d} removed")))
 
 (defn- mkdir [d]
-  (go
-    (if-not (:exists (<! (check-dir d)))
-      (<! (io-fs/amkdir d))
-      [nil (<< "folder ~{d} exists, skipping mkdir")])))
+  (translate
+   (go
+     (if-not (:exists (<! (check-dir d)))
+       (<! (io-fs/amkdir d))
+       [nil (<< "folder ~{d} exists, skipping mkdir")]))
+   (<< "folder ~{d} created")))
 
 (defn- touch [dest]
-  (go
-    (if-not (:exists (<! (check-file dest)))
-      (<! (io-fs/atouch dest))
-      [nil (<< "file ~{dest} exists, skipping touch")])))
+  (translate
+   (go
+     (if-not (:exists (<! (check-file dest)))
+       (<! (io-fs/atouch dest))
+       [nil (<< "file ~{dest} exists, skipping touch")]))
+   (<< "file ~{dest} touched")))
 
 (defn- rmfile [dest]
-  (go
-    (if (:exists (<! (check-file dest)))
-      (<! (io-fs/arm dest))
-      [nil (<< "file ~{dest} does not exists, skipping file rm")])))
+  (translate
+   (go
+     (if (:exists (<! (check-file dest)))
+       (<! (io-fs/arm dest))
+       [nil (<< "file ~{dest} does not exists, skipping file rm")]))
+   (<< "file ~{dest} removed")))
 
 (defn- mklink
   [src target]
@@ -158,7 +166,7 @@
   ([tmpl dest args]
    (template nil tmpl dest args))
   ([c tmpl dest args]
-   (run c (fn [] (run-template args tmpl dest)))))
+   (run c run-template [args tmpl dest])))
 
 (defn copy
   "Copy a file resource:
@@ -168,7 +176,7 @@
   ([src dest]
    (run-copy src dest))
   ([c src dest]
-   (run c (fn [] (copy src dest)))))
+   (run c copy [src dest])))
 
 (defn chown
   "Change file/directory owner using uid & gid resource:
@@ -185,7 +193,7 @@
      (chown a b c d {})
      (apply exec (append-options ["/bin/chown" (<< "~{b}:~{c}") a] d))))
   ([c dest u g options]
-   (run c #(chown dest u g options))))
+   (run c chown [dest u g options])))
 
 (defn rename
   "Rename a file/directory resource:
@@ -195,7 +203,7 @@
   ([src dest]
    (translate (io-fs/arename src dest) (<< "~{src} moved to ~{dest}")))
   ([c src dest]
-   (run c #(rename src dest))))
+   (run c rename [src dest])))
 
 (defn chmod
   "Change file/directory mode resource:
@@ -210,14 +218,12 @@
      (chmod a b c {})
      (apply exec (append-options ["/bin/chmod" b a] c))))
   ([c dest mode options]
-   (run c #(chmod dest mode options))))
+   (run c chmod [dest mode options])))
 
-(def directory-states {:present mkdir
-                       :absent rmdir})
+(def directory-states {:present mkdir :absent rmdir})
 
 (defn directory
   "Directory resource:
-
     (directory \"/tmp/bla\") ; create directory
     (directory \"/tmp/bla\" :present) ; explicit create
     (directory \"/tmp/bla\" :absent) ; remove directory
@@ -227,13 +233,12 @@
   ([dest state]
    (directory nil dest state))
   ([c dest state]
-   (run c #(translate ((directory-states state) dest) (<< "Directory ~{dest} is ~(name state)")))))
+   (run c (directory-states state) [dest])))
 
 (def file-states {:present touch
                   :absent rmfile})
 (defn file
   "File resource:
-
     (file \"/tmp/bla\") ; touch a file
     (file \"/tmp/bla\" :present) ; explicit present
     (file \"/tmp/bla\" :absent) ; remove a file
@@ -243,7 +248,7 @@
   ([dest state]
    (file nil dest state))
   ([c dest state]
-   (run c #(translate ((file-states state) dest) (<< "File ~{dest} is ~(name state)")))))
+   (run c (file-states state) [dest])))
 
 (def symlink-states {:present mklink})
 
@@ -259,7 +264,7 @@
     ((symlink-states state) src target)
     (<< "Symlink from ~{src} to ~{target} is ~(name state)")))
   ([c src target state]
-   (run c #(symlink src target state))))
+   (run c symlink [src target state])))
 
 (defn line
   "File line resource either append or remove lines:
@@ -274,5 +279,5 @@
    (let [{:keys [ch args state] :or {state :present}} (update (into-spec {} as) :args reverse)
          fns {:present add-line :set set-line :absent rm-line}]
      (if ch
-       (run ch #(apply (fns state) args))
-       (apply (fns state) args)))))
+       (run ch (fns state) args)
+       (run nil (fns state) args)))))

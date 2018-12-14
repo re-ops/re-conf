@@ -63,10 +63,10 @@
 
 (defn exec
   "Shell execution resource"
-  [a & args]
-  (if (channel? a)
-    (run a #(apply sh args))
-    (run nil #(apply sh (conj args a)))))
+  [c & args]
+  (if (channel? c)
+    (run c sh args)
+    (run nil sh (conj args c))))
 
 (defn exec-sync
   "Sync exec (not resource)"

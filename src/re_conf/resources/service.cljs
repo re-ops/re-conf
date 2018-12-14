@@ -69,7 +69,5 @@
   ([& args]
    (let [{:keys [ch name state provider] :or {provider systemd state :restart}} (into-spec {} args)
          fns {:start start :stop stop :disable disable :enable enable :restart restart}]
-     (if ch
-       (run ch #((fns state) provider name))
-       ((fns state) provider name)))))
+     (run ch (fns state) [provider name]))))
 

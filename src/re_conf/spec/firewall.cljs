@@ -9,8 +9,7 @@
    [re-conf.resources.log :refer (info debug error)]
    [cljs.core.async :refer [<!]]
    [re-conf.resources.shell :refer (sh)]
-   [re-conf.resources.firewall :refer (ufw-bin)]
-   [re-conf.resources.common :refer (run)]))
+   [re-conf.resources.firewall :refer (ufw-bin)]))
 
 (defn- ufw-rule
   "ufw rule status syntax from map"

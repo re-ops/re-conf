@@ -1,7 +1,6 @@
 (ns re-conf.resources.archive
   "Archive extraction and manipulation resources"
   (:require
-   [re-conf.resources.common :refer (run)]
    [re-conf.resources.pkg :refer (package)]
    [re-conf.resources.shell :refer (exec)]))
 

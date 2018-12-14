@@ -63,6 +63,16 @@
         (keyword? a) (into-spec (assoc m :state a) (rest args))
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
 
+(defn add-rule
+  "Serialized add-rule call"
+  [provider rule]
+  (call add provider rule))
+
+(defn delete-rule
+  "Serialized delete-rule call"
+  [provider rule]
+  (call delete provider rule))
+
 (defn rule
   "Firewall Rule resource with optional provider and state parameters:
      (rule {:port 22}) ; allow port 22
@@ -72,10 +82,16 @@
   "
   [& args]
   (let [{:keys [ch rule state provider] :or {provider (ufw) state :present}} (into-spec {} args)
-        fns {:present add :absent delete}]
-    (if ch
-      (run ch #(call (fns state) provider rule))
-      (call (fns state) provider rule))))
+        fns {:present add-rule :absent delete}]
+    (run ch (fns state) [provider rule])))
+
+(defn enable-firewall
+  [provider]
+  (call enable provider))
+
+(defn disable-firewall
+  [provider]
+  (call disable provider))
 
 (defn firewall
   "Firewall resource management
@@ -84,10 +100,8 @@
   "
   [& args]
   (let [{:keys [ch state provider] :or {provider (ufw) state :present}} (into-spec {} args)
-        fns {:present enable :absent disable}]
-    (if ch
-      (run ch #(call (fns state) provider))
-      (call (fns state) provider))))
+        fns {:present enable-firewall :absent disable-firewall}]
+    (run ch (fns state) [provider])))
 
 (defn initialize
   "Setup firewall resource serializing consumer"

@@ -52,11 +52,11 @@
   ([repo dest]
    (run-clone repo dest))
   ([c repo dest]
-   (run c #(clone repo dest))))
+   (run c clone [repo dest])))
 
 (defn pull
   "Pull latest changes from a git repo resource"
   ([repo dest]
    (run-pull repo dest))
   ([c repo dest]
-   (run c #(pull repo dest))))
+   (run c pull [repo dest])))

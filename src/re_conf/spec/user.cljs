@@ -2,8 +2,7 @@
   "Specification for users"
   (:require
    [cljs.core.async :refer [<! go]]
-   [re-conf.resources.shell :refer (sh)]
-   [re-conf.resources.common :refer (run)]))
+   [re-conf.resources.shell :refer (sh)]))
 
 (defn user-exists?
   "checks if a user exists"

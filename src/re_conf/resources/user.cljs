@@ -62,7 +62,7 @@
   ([name state options]
    ((user-states state) name options))
   ([c name state options]
-   (run c #(user name state options))))
+   (run c user [name state options])))
 
 (def group-states {:present addgroup
                    :absent rmgroup})
@@ -78,5 +78,5 @@
      (group a b c {})
      ((group-states a) b c)))
   ([c name state options]
-   (run c #(group name state options))))
+   (run c group [name state options])))
 

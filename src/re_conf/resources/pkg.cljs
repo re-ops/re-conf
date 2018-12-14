@@ -125,6 +125,12 @@
         (keyword? a) (into-spec (assoc m :state a) (rest args))
         (fn? a) (into-spec (assoc m :provider (a)) (rest args))))))
 
+(defn package-install [provider pkg]
+  (call install- provider pkg))
+
+(defn package-uninstall [provider pkg]
+  (call uninstall provider pkg))
+
 (defn package
   "Package resource with optional provider and state parameters:
 
@@ -135,14 +141,14 @@
   "
   ([& args]
    (let [{:keys [ch pkg state provider] :or {provider (apt) state :present}} (into-spec {} args)
-         fns {:present install- :absent uninstall}]
-     (if ch
-       (run ch #(call (fns state) provider pkg))
-       (call (fns state) provider pkg)))))
+         fns {:present package-install :absent package-uninstall}]
+     (run ch (fns state) [provider pkg]))))
+
+(defn update-repo [provider]
+  (call update- provider))
 
 (defn update
   "Update package repository index resource:
-
     (update)
   "
   ([]
@@ -150,7 +156,10 @@
   ([c]
    (update c (apt)))
   ([c provider]
-   (run c #(call update- provider))))
+   (run c update-repo [provider])))
+
+(defn upgrade-repo [provider]
+  (call upgrade- provider))
 
 (defn upgrade
   "Upgrade installed packages:
@@ -160,13 +169,13 @@
   ([]
    (upgrade (apt)))
   ([provider]
-   (call upgrade- provider))
+   (run nil upgrade-repo [provider]))
   ([c provider]
-   (run c #(upgrade provider))))
+   (run c upgrade-repo [provider])))
 
+; TODO fix this!
 (defn repository
   "Package repository resource:
-
     (repository \"deb https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu/ xenial main\" :present)
     (repository \"deb https://raw.githubusercontent.com/narkisr/fpm-barbecue/repo/packages/ubuntu/ xenial main\" :absent)
    "
@@ -176,7 +185,7 @@
    (let [fns {:present add-repo- :absent rm-repo}]
      (call (fns state) (apt) repo)))
   ([c repo state]
-   (run c #(repository repo state))))
+   (run c repository [repo state])))
 
 (defn key-file
   "Import a gpg apt key from a file resource:

@@ -42,4 +42,4 @@
   ([device target state options]
    (mount nil target state options))
   ([c device target state options]
-   (run c #((mount-states state) device target options))))
+   (run c (mount-states state) [device target options])))

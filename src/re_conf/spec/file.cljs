@@ -55,7 +55,7 @@
          {:error (<< "~{f} does not contain ~{s}") :present false}))))
 
   ([c f s]
-   (run c #(contains f s))))
+   (run c contains [f s])))
 
 (defn stats
   "Get file stats info"

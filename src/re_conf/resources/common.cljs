@@ -26,14 +26,14 @@
     (let [start (.hrtime process)
           r (<! (f))
           end (.hrtime process start)]
-      (debug (assoc r :profile end) ::profile)
+      (debug (assoc r :profile end :function (function-name f)) ::profile)
       r)))
 
-(defn run [c f]
+(defn run [c f args]
   (go
     (let [r (if c (<! c) {:ok true})]
       (if (:ok r)
-        (<! (profile f))
+        (<! (profile (apply f args)))
         r))))
 
 (defn obj->clj

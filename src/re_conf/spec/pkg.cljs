@@ -24,5 +24,5 @@
   ([id]
    (check-finger id))
   ([c id]
-   (run c #(fingerprint id))))
+   (run c fingerprint [id])))
 

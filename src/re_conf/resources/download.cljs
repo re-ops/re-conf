@@ -60,7 +60,7 @@
   ([file e k]
    (checksum nil file e k))
   ([c file e k]
-   (run c #(run-checkum file e k))))
+   (run c run-checkum [file e k])))
 
 (defn download
   "Download file resource, if checksum is provided download will be lazy:
@@ -72,7 +72,7 @@
   ([url dest]
    (download nil url dest))
   ([c url dest]
-   (run c #(run-download url dest)))
+   (run c run-download [url dest]))
   ([url dest sum k]
    (download nil url dest sum k))
   ([c url dest sum k]
