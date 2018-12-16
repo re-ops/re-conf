@@ -69,6 +69,7 @@
                 :output-dir "target/js/compiled/dev"
                 :target :nodejs
                 :optimizations :none
+                :parallel-build true
                 :source-map-timestamp true
 		   }
              }
@@ -79,6 +80,7 @@
                  :output-to "target/unit-tests.js"
                  :optimizations :none
                  :target :nodejs
+                 :parallel-build true
                :main re-conf.test.suite
 		   }
 		 }
@@ -88,7 +90,12 @@
                 :output-to "re-conf.js"
                 :output-dir "target/js/compiled/prod"
                 :target :nodejs
-                :optimizations :simple}}]}
+                :parallel-build true
+                :optimizations :simple
+              }
+            }
+        ]
+    }
 
     :profiles {
       :dev {
