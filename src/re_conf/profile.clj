@@ -40,8 +40,8 @@
 (def vega-fmt (f/formatter "HH:mm:ss"))
 
 (defn into-group [rs]
-  (map-indexed
-   (fn [i m]
+  (map
+   (fn [m]
      (let [{:keys [function profile timestamp]} m [n c] profile]
        {:x (f/unparse vega-fmt (f/parse winston-time timestamp))
         :y (clojure.edn/read-string (str n "." c))
@@ -53,10 +53,10 @@
 
 (def line-plot
   {:data {:values (load-)
-          :format {:parse {:x "%HH:%mm:%ss"}}}
+          :format {:parse {:x "utc: '%H:%M:%s'"}}}
    :width 800
-   :encoding {:x {:field "x" :timeunit "seconds" :type "temporal"}
-              :y {:field "y"}
+   :encoding {:x {:field "x" :timeUnit "minutesseconds" :type "temporal"}
+              :y {:field "y" :type "quantitative"}
               :color {:field "col" :type "nominal"}}
    :mark "line"})
 
