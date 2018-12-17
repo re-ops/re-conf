@@ -1,5 +1,7 @@
 (ns re-conf.profile
   (:require
+   [clj-time.core :as c]
+   [clj-time.format :as f]
    [oz.core :as oz]
    [cheshire.core :as json]))
 
@@ -33,19 +35,27 @@
   [lines]
   (filter (fn [m] (get-in m [:message :function])) lines))
 
+(def winston-time (f/formatter "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
+
+(def vega-fmt (f/formatter "HH:mm:ss"))
+
 (defn into-group [rs]
   (map-indexed
    (fn [i m]
      (let [{:keys [function profile timestamp]} m [n c] profile]
-       {:x i :y (clojure.edn/read-string (str n "." c)) :col function}))
+       {:x (f/unparse vega-fmt (f/parse winston-time timestamp))
+        :y (clojure.edn/read-string (str n "." c))
+        :col function}))
    rs))
 
 (defn load- []
   (into-group (cleanup (resources (logs "example.json")))))
 
 (def line-plot
-  {:data {:values (load-)}
-   :encoding {:x {:field "x"}
+  {:data {:values (load-)
+          :format {:parse {:x "%HH:%mm:%ss"}}}
+   :width 800
+   :encoding {:x {:field "x" :timeunit "seconds" :type "temporal"}
               :y {:field "y"}
               :color {:field "col" :type "nominal"}}
    :mark "line"})

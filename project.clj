@@ -30,7 +30,9 @@
 
                  ; profiling
                  [metasoarous/oz "1.3.1"]
-                 [org.clojure/data.json "0.2.6"] ]
+                 [org.clojure/data.json "0.2.6"]
+                 [clj-time "0.15.0"]
+              ]
 
   :npm {
         :dependencies [
