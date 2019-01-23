@@ -59,8 +59,10 @@
    (user nil name {} :present))
   ([name state]
    (user nil name state {}))
-  ([name state options]
-   ((user-states state) name options))
+  ([a b c]
+    (if (channel? a)
+     (user a b c {})
+     ((user-states b) a c)))
   ([c name state options]
    (run c user [name state options])))
 
@@ -76,7 +78,7 @@
   ([a b c]
    (if (channel? a)
      (group a b c {})
-     ((group-states a) b c)))
+     ((group-states b) a c)))
   ([c name state options]
    (run c group [name state options])))
 
