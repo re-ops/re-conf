@@ -77,21 +77,20 @@
   ([f]
    (total f #{}))
   ([f excluded]
-    {:mark "bar"
-     :width 800
-     :data {:values (filter (fn [{:keys [resource]}] (not (excluded resource))) (aggregates f))}
-     :encoding {:x {:field "resource" :type "ordinal"}
-                :y {:field "profile" :type "quantitative"}
-                :color {:field "resource" :type "nominal"}}}))
+   {:mark "bar"
+    :width 800
+    :data {:values (filter (fn [{:keys [resource]}] (not (excluded resource))) (aggregates f))}
+    :encoding {:x {:field "resource" :type "ordinal"}
+               :y {:field "profile" :type "quantitative"}
+               :color {:field "resource" :type "nominal"}}}))
 
 (defn viz [f]
   [:div
-    [:h1 "re-conf profiling"]
-    [:p "timeline and resources compared"]
-    [:div
-      [:vega-lite (timeline f)]
-      [:vega-lite (total f)]]
-    ])
+   [:h1 "re-conf profiling"]
+   [:p "timeline and resources compared"]
+   [:div
+    [:vega-lite (timeline f)]
+    [:vega-lite (total f)]]])
 
 (comment
   (start-server)

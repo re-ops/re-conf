@@ -60,7 +60,7 @@
   ([name state]
    (user nil name state {}))
   ([a b c]
-    (if (channel? a)
+   (if (channel? a)
      (user a b c {})
      ((user-states b) a c)))
   ([c name state options]
