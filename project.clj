@@ -1,16 +1,16 @@
-(defproject re-conf "0.4.1"
+(defproject re-conf "0.4.2"
   :description "Functional configuration management using Clojure(script)"
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
 
   :min-lein-version "2.7.1"
 
-  :dependencies [[org.clojure/clojure "1.9.0"]
+  :dependencies [[org.clojure/clojure "1.10.0"]
                  ; common
                  [org.clojure/core.async "0.4.474"]
 
                  ; clojurescript
-                 [org.clojure/clojurescript "1.10.238"]
+                 [org.clojure/clojurescript "1.10.516"]
                  [cljs-node-io "0.5.0"]
 
                  ; string manipulation
