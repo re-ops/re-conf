@@ -259,10 +259,12 @@
   "
   ([src target]
    (symlink src target :present))
-  ([src target state]
-   (translate
-    ((symlink-states state) src target)
-    (<< "Symlink from ~{src} to ~{target} is ~(name state)")))
+  ([a b c]
+   (if (channel? a)
+     (symlink a b c :present)
+     (translate
+      ((symlink-states c) a b)
+      (<< "Symlink from ~{a} to ~{b} is ~(name c)"))))
   ([c src target state]
    (run c symlink [src target state])))
 
