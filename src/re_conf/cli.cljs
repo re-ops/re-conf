@@ -9,13 +9,16 @@
 
 (def fs (js/require "fs"))
 
+(defn into-categories [s]
+  (map keyword (clojure.string/split s #"\,")))
+
 (defn- cli-options
-  [profiles]
+  [categories]
   [["-d" "--debug" "debug (include profiling information)" :default false]
    ["-e" "--environment ENVIRONMENT" "environment file"
     :validate [#(.existsSync fs %) "environment file is missing make sure that path is correct"]]
-   ["-p" "--profile PROFILE" (<< "profile, one of ~{profiles}")
-    :validate [#(profiles (keyword %)) (<< "profile must be one of ~{profiles}")]]
+   ["-c" "--categories CATEGORIES" (<< "comma seperated list of categories from the available ~(map name (keys categories)) list")
+    :validate [#(every? (set (keys categories)) (into-categories %)) (<< "each category must be one of ~(keys categories)")]]
    ["-h" "--help"]])
 
 (defn- pre-process
@@ -31,14 +34,14 @@
   (when-not (contains? options :environment)
     (println "environment is missing")
     (.exit process 1))
-  (when-not (contains? options :profile)
-    (println "profile is missing")
+  (when-not (contains? options :categories)
+    (println "categories are missing")
     (.exit process 1))
   (when (options :debug)
     (debug-on))
   m)
 
 (defn parse-options
-  [args profiles]
-  (pre-process (parse-opts args (cli-options profiles))))
+  [args categories]
+  (pre-process (parse-opts args (cli-options categories))))
 

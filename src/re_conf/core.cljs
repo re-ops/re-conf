@@ -50,7 +50,7 @@
 
 (defn invoke-all
   "Invoke multiple namespace functions and return errors"
-  [env & nmsps]
+  [env nmsps]
   (go
     (let [results (<! (async/into [] (async/merge (map (partial invoke env) nmsps))))]
       (mapcat (fn [rs] (filter :error rs)) results))))
