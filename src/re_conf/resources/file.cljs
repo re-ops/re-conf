@@ -42,7 +42,7 @@
 
 (defn- append-options [args opts]
   (cond->> args
-    (opts :recursive) (into args ["-R"])))
+    (opts :recursive) (into ["-R"])))
 
 (defn- run-copy
   [src dest]
