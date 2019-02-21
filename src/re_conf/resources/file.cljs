@@ -41,7 +41,7 @@
             {:ok {:message "writing template source success" :template tmpl :dest dest}}))))))
 
 (defn- append-options [args opts]
-  (cond->> args
+  (cond-> args
     (opts :recursive) (into ["-R"])))
 
 (defn- run-copy
