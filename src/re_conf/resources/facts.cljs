@@ -16,6 +16,10 @@
   []
   (= (:status (exec-sync "bash" "-c" "type Xorg")) 0))
 
+(defn arm? []
+  "Are we are running on an ARM cpu"
+  (= (:status (exec-sync "/bin/grep" "-q" "ARM" "/proc/cpuinfo")) 0))
+
 (defn- get- [c k]
   (fn [d]
     (let [r (js->clj d :keywordize-keys true)]
