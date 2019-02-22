@@ -67,17 +67,17 @@
     [this server id]
     (go
       (let [{:keys [distro platform]} (<! (os))]
-        (if (and (= platform "linux") (= distro "Ubuntu"))
+        (if (and (= platform "linux") (#{"Ubuntu" "Raspbian GNU/Linux"} distro))
           (<! (sh "/usr/bin/apt-key" "adv" "--keyserver" server "--recv" id))
-          {:error (<< "cant import apt key under ~{platform} ~{distro}")}))))
+          {:error (<< "cant import apt key under platform ~{platform} and distro ~{distro}")}))))
 
   (key-file-
     [this file]
     (go
       (let [{:keys [distro platform]} (<! (os))]
-        (if (and (= platform "linux") (= distro "Ubuntu"))
+        (if (and (= platform "linux") (#{"Ubuntu" "Raspbian GNU/Linux"} distro))
           (<! (sh "/usr/bin/apt-key" "add" file))
-          {:error (<< "cant import apt key under ~{platform} ~{distro}")})))))
+          {:error (<< "cant import apt key under platform ~{platform} and ~{distro}")})))))
 
 (deftype Pkg [pipe]
   Package
