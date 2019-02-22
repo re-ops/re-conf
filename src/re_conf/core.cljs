@@ -6,8 +6,8 @@
    [re-conf.resources.common :refer (ok?)]
    [re-conf.resources.facts :refer (os)]
    [re-conf.resources.pkg :as p :refer (initialize)]
-   [re-conf.resources.log :refer (info debug error)]
-   [cljs.core.async :as async :refer [take! go]]
+   [re-conf.resources.log :refer (info debug error channel?)]
+   [cljs.core.async :as async :refer [take! go chan]]
    [cljs.nodejs :as nodejs]))
 
 (nodejs/enable-util-print!)
@@ -34,12 +34,17 @@
   [n]
   (js->clj (js/Object n)))
 
+(defn check-result [r]
+  (if (channel? r)
+    r
+    (go {:error "recipe function didn't return a channel!"})))
+
 (defn call-fn [env [k f]]
   (debug (<< "invoking ~{k}") ::invoke)
   (go
     (case (arg-count f)
-      0 (<! (f))
-      1 (<! (f env)))))
+      0 (<! (check-result (f)))
+      1 (<! (check-result (f env))))))
 
 (defn- invoke
   "Invoke public functions in a namespace and return results
