@@ -27,7 +27,17 @@
   (key-file- [this file])
   (key-server- [this server id]))
 
+(defprotocol PPA
+  (add-ppa [this repo])
+  (rm-ppa [this repo]))
+
 (def apt-bin "/usr/bin/apt-get")
+
+(defn- add- [repo]
+  (sh "/usr/bin/add-apt-repository" repo "-y"))
+
+(defn- remove- [repo]
+  (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))
 
 (defrecord Apt [pipe]
   Package
@@ -49,6 +59,15 @@
     (go
       (<! (sh "/usr/bin/apt-get" "upgrade" "-y"))))
 
+  PPA
+  (add-ppa [this repo]
+    (go
+      (<! (add- repo))))
+
+  (rm-ppa [this repo]
+    (go
+      (<! (remove- repo))))
+
   Repo
   (add-repo- [this repo]
     (go
@@ -57,11 +76,11 @@
           error
           (if present
             {:ok (<< "repo ~{repo} is present, skipping") :skip true}
-            (<! (sh "/usr/bin/add-apt-repository" repo "-y")))))))
+            (<! (add- repo)))))))
 
   (rm-repo [this repo]
     (go
-      (<! (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))))
+      (<! (remove- repo))))
 
   (key-server-
     [this server id]
@@ -211,7 +230,7 @@
    (run c key-server-import [server id])))
 
 (defn add-repo
-  "Add repo, gpg key and fingerprint:
+  "Add repo, gpg key and fingerprint in one go:
 
    (let [repo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\"
          key \"https://dl-ssl.google.com/linux/linux_signing_key.pub\"]
@@ -225,6 +244,19 @@
      (fingerprint id)
      (repository repo :present)
      (update))))
+
+(defn ppa
+  "Add a PPA repository
+     (ppa \"ppa:neovim-ppa/stable\" :present)
+     (ppa \"ppa:neovim-ppa/stable\" :absent)
+  "
+  ([repo]
+   (ppa repo :present))
+  ([repo state]
+   (let [fns {:present add-ppa :absent rm-ppa}]
+     (call (fns state) (apt) repo)))
+  ([c repo state]
+   (run c ppa [repo state])))
 
 (defn initialize
   "Setup package resource serializing consumer"
