@@ -23,11 +23,12 @@
 
 (defn profile [f args]
   (go
-    (let [start (.hrtime process)
-          r (<! (apply f args))
-          end (.hrtime process start)]
-      (debug (assoc r :profile end :function (function-name f)) ::profile)
-      r)))
+    (let [start (.hrtime process)]
+      (debug {:profile start :function (function-name f) :pre true} ::profile)
+      (let [r (<! (apply f args))
+            end (.hrtime process start)]
+        (debug (assoc r :profile end :function (function-name f) :post true) ::profile)
+        r))))
 
 (defn run [c f args]
   (go
