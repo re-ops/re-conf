@@ -23,6 +23,7 @@
     (case release
       "16.04" "/sbin/systemctl"
       "18.04" "/bin/systemctl"
+      "18.10" "/bin/systemctl"
       nil)))
 
 (defn sysctl [action service]
