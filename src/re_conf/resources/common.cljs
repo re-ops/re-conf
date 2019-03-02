@@ -26,7 +26,7 @@
     (let [start (.hrtime process)
           r (<! (apply f args))
           end (.hrtime process start)]
-      (debug (assoc r :profile end :function (function-name f) :args args) ::profile)
+      (debug (assoc r :profile end :function (function-name f)) ::profile)
       r)))
 
 (defn run [c f args]
