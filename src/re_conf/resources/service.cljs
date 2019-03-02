@@ -18,12 +18,19 @@
 
 (def systemd-bin "/usr/sbin/service")
 
-(defn sysctl []
+(defn sysctl-bin [release]
   (go
-    (case (<! (os :release))
+    (case release
       "16.04" "/sbin/systemctl"
       "18.04" "/bin/systemctl"
-      :no-matching-release!)))
+      nil)))
+
+(defn sysctl [action service]
+  (go
+    (let [release (<! (os :release))]
+      (if-let [bin (<! (sysctl-bin release))]
+        (<! (sh bin action (<< "~{service}.service")))
+        {:error (<< "sysctl binary not found for os release ~{release}")}))))
 
 (defrecord Systemd []
   Service
@@ -45,12 +52,12 @@
   (disable [this service]
     (debug "disabling service" ::systemd)
     (go
-      (<! (sh (<! (sysctl)) "disable" (<< "~{service}.service")))))
+      (<! (sysctl "disable" service))))
 
   (enable [this service]
     (debug "enabling service" ::systemd)
     (go
-      (<! (sh (<! (sysctl)) "enable" (<< "~{service}.service"))))))
+      (<! (sysctl "enable" service)))))
 
 (def systemd (Systemd.))
 
