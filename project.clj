@@ -1,4 +1,4 @@
-(defproject re-conf "0.4.8"
+(defproject re-conf "0.4.9"
   :description "Functional configuration management using Clojure(script)"
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}

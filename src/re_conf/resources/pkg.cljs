@@ -1,5 +1,5 @@
 (ns re-conf.resources.pkg
-  "Package resources"
+  "Package resources, blocking channels are used to block multiple operations per package provide type"
   (:refer-clojure :exclude [update key remove])
   (:require-macros
    [clojure.core.strint :refer (<<)])
@@ -17,7 +17,9 @@
 
 (defprotocol Package
   (install- [this pkg])
-  (uninstall [this pkg])
+  (uninstall [this pkg]))
+
+(defprotocol Manage
   (update- [this])
   (upgrade- [this]))
 
@@ -33,31 +35,64 @@
 
 (def apt-bin "/usr/bin/apt-get")
 
+(def dpkg-bin "/usr/bin/dpkg")
+
+(def gem-bin "/usr/bin/gem")
+
 (defn- add- [repo]
   (sh "/usr/bin/add-apt-repository" repo "-y"))
 
 (defn- remove- [repo]
   (sh "/usr/bin/add-apt-repository" "--remove" repo "-y"))
 
+(defrecord Deb [pipe]
+  Package
+  (install- [this pkgs]
+    (let [pkg (first pkgs)]
+      (debug (<< "installing ~{pkg}") ::deb)
+      (go
+        (<! (sh dpkg-bin "-i" pkg)))))
+
+  (uninstall [this pkgs]
+    (let [pkg (first pkgs)]
+      (debug (<< "uninstalling ~{pkg}") ::deb)
+      (go
+        (<! (sh dpkg-bin "-r" pkg))))))
+
+(defrecord Gem [pipe]
+  Package
+  (install- [this pkgs]
+    (let [gem (first pkgs)]
+      (debug "installing ~{gem}" ::gem)
+      (go
+        (<! (sh gem-bin "install" gem)))))
+
+  (uninstall [this pkgs]
+    (let [gem (first pkgs)]
+      (debug "uninstalling ~{gem}" ::gem)
+      (go
+        (<! (sh gem-bin "uninstall" gem))))))
+
 (defrecord Apt [pipe]
   Package
-  (install- [this pkg]
+  (install- [this pkgs]
     (debug "running install" ::apt)
     (go
-      (<! (apply sh (flatten [apt-bin "install" pkg "-y"])))))
+      (<! (apply sh (flatten [apt-bin "install" pkgs "-y"])))))
 
-  (uninstall [this pkg]
+  (uninstall [this pkgs]
     (debug "running uninstall" ::apt)
     (go
-      (<! (apply sh (flatten ["/usr/bin/apt-get" "remove" pkg "-y"])))))
+      (<! (apply sh (flatten [apt-bin "remove" pkgs "-y"])))))
 
+  Manage
   (update- [this]
     (go
-      (<! (sh "/usr/bin/apt-get" "update"))))
+      (<! (sh apt-bin "update"))))
 
   (upgrade- [this]
     (go
-      (<! (sh "/usr/bin/apt-get" "upgrade" "-y"))))
+      (<! (sh apt-bin "upgrade" "-y"))))
 
   PPA
   (add-ppa [this repo]
@@ -108,6 +143,7 @@
     (go
       (<! (sh "/usr/sbin/pkg" "remove" "-y" (join " " pkg)))))
 
+  Manage
   (update- [this]
     (go
       (<! (sh "/usr/sbin/pkg" "update"))))
@@ -123,14 +159,22 @@
         "linux" (<! (sh "/usr/bin/dpkg" "-s" pkg))
         :default  {:error (<< "No matching package provider found for ~{platform}")}))))
 
-(def package-pipe (chan 10))
+(def os-pipe (chan 10))
+
+(def gem-pipe (chan 10))
 
 ; providers
 (defn apt []
-  (Apt. package-pipe))
+  (Apt. os-pipe))
+
+(defn deb []
+  (Deb. os-pipe))
+
+(defn gem []
+  (Gem. gem-pipe))
 
 (defn pkg []
-  (Pkg. package-pipe))
+  (Pkg. os-pipe))
 
 ; consumers
 
@@ -152,10 +196,10 @@
 
 (defn package
   "Package resource with optional provider and state parameters:
-
     (package \"ghc\") ; state is present by default
     (package \"ghc\" \"gnome-terminal\") ; multiple packages
     (package \"ghc\" :present) ; explicit state
+    (package \"/tmp/foo.deb\" deb :present) ; using deb provider
     (package \"ghc\" :absent) ; remove package
   "
   ([& args]
@@ -182,7 +226,6 @@
 
 (defn upgrade
   "Upgrade installed packages:
-
     (upgrade)
   "
   ([]
@@ -262,5 +305,6 @@
   "Setup package resource serializing consumer"
   []
   (go
-    (consumer package-pipe)))
+    (consumer gem-pipe)
+    (consumer os-pipe)))
 
