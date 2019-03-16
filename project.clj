@@ -50,8 +50,6 @@
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-figwheel "0.5.14"]
             [lein-ancient "0.6.15" :exclusions [org.clojure/clojure]]
-            [venantius/ultra "0.5.2"]
-            [lein-cljfmt "0.5.7"]
             [lein-set-version "0.3.0"]
             [lein-tag "0.1.0"]
             [lein-npm "0.6.2"]]
