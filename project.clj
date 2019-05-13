@@ -3,7 +3,7 @@
   :url "https://github.com/re-ops/re-conf"
   :license  {:name "Apache License, Version 2.0" :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
 
-  :min-lein-version "2.7.1"
+  :min-lein-version "2.9.1"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  ; common
@@ -32,6 +32,9 @@
                  [metasoarous/oz "1.3.1"]
                  [org.clojure/data.json "0.2.6"]
                  [clj-time "0.15.0"]
+
+                 ; spec
+                 [expound "0.7.2"]
               ]
 
   :npm {
@@ -101,12 +104,12 @@
     :profiles {
       :dev {
          :dependencies
-            [[figwheel-sidecar "0.5.14"] [com.cemerick/piggieback "0.2.2"]]
+            [[figwheel-sidecar "0.5.14"] [cider/piggieback "0.4.0"]]
           :source-paths ["src" "dev"]
           :repl-options {
             :port 38081
             :init (do (fig-start))
-            :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
+            :nrepl-middleware [cider.piggieback/wrap-cljs-repl]
            }
        }
       :codox {
