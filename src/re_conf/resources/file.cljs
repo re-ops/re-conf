@@ -10,7 +10,7 @@
    [re-conf.spec.file :refer (check-link check-dir check-file contains)]
    [cljs.core.async :as async :refer [<! go put! chan]]
    [cljs-node-io.core :as io]
-   [cljs-node-io.fs :as io-fs]
+   [cljs-node-io.fs :as fs]
    [cljstache.core :refer [render]]))
 
 (def fs (js/require "fs"))
@@ -21,7 +21,7 @@
   "convert io.fs nil to :ok and err? into {:error e}"
   [c m]
   (go
-    (let [[f s :as r] (<! c)]
+    (let [[f _ :as r] (<! c)]
       (cond
         (nil? f) {:ok m}
         :else {:error (if (string? f) f (map obj->clj r))}))))
@@ -60,19 +60,19 @@
    (go
      (if-not (:exists (<! (check-dir d)))
        [nil (<< "folder ~{d} missing, skipping rmdir")]
-       (let [[err v]  (<! (io-fs/areaddir d))]
+       (let [[err v]  (<! (fs/areaddir d))]
          (if err
            [err]
            (if (empty? v)
-             (<! (io-fs/armdir d))
-             (<! (io-fs/arm-r d)))))))
+             (<! (fs/armdir d))
+             (<! (fs/arm-r d)))))))
    (<< "folder ~{d} removed")))
 
 (defn- mkdir [d]
   (translate
    (go
      (if-not (:exists (<! (check-dir d)))
-       (<! (io-fs/amkdir d))
+       (<! (fs/amkdir d))
        [nil (<< "folder ~{d} exists, skipping mkdir")]))
    (<< "folder ~{d} created")))
 
@@ -80,7 +80,7 @@
   (translate
    (go
      (if-not (:exists (<! (check-file dest)))
-       (<! (io-fs/atouch dest))
+       (<! (fs/atouch dest))
        [nil (<< "file ~{dest} exists, skipping touch")]))
    (<< "file ~{dest} touched")))
 
@@ -88,19 +88,33 @@
   (translate
    (go
      (if (:exists (<! (check-file dest)))
-       (<! (io-fs/arm dest))
+       (<! (fs/arm dest))
        [nil (<< "file ~{dest} does not exists, skipping file rm")]))
    (<< "file ~{dest} removed")))
 
 (defn- mklink
   [src target]
-  (go
-    (let [{:keys [error ok exists] :as m} (<! (check-link src target))]
-      (if-not exists
-        (<! (io-fs/asymlink src target))
-        (if ok
-          [nil ok]
-          [error])))))
+  (translate
+   (go
+     (let [{:keys [error ok exists]} (<! (check-link src target))]
+       (if-not exists
+         (<! (fs/asymlink src target))
+         (if ok
+           [nil ok]
+           [error]))))
+   (<< "link from ~{src} to ~{target} created")))
+
+(defn- rmlink
+  [path]
+  (translate
+   (go
+     (let [{:keys [error ok exists]} (<! (check-link path))]
+       (if exists
+         (<! (fs/aunlink path))
+         (if ok
+           [nil ok]
+           [error]))))
+   (<< "link ~{path} removed")))
 
 (defn- add-line "Append a line to a file"
   [dest line]
@@ -110,7 +124,7 @@
         {:error error}
         (if present
           {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
-          (<! (translate (io-fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
+          (<! (translate (fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
 
 (defn- set-key [k v sep]
   (fn [line]
@@ -123,13 +137,13 @@
   (go
     (if-let [e (error? (<! (check-file dest)))]
       {:error e}
-      (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+      (let [[err lines] (<! (fs/areadFile dest "utf-8"))]
         (if err
           {:error err}
           (let [edited (map (set-key k v sep)  (split-lines lines))]
             (<!
              (translate
-              (io-fs/awriteFile dest (join "\n" edited) {:override true})
+              (fs/awriteFile dest (join "\n" edited) {:override true})
               (<< "set ~{k}~{sep}~{v}")))))))))
 
 (defn line-eq
@@ -148,13 +162,13 @@
 
 (defn- rm-line [dest f]
   (go
-    (let [[err lines] (<! (io-fs/areadFile dest "utf-8"))]
+    (let [[err lines] (<! (fs/areadFile dest "utf-8"))]
       (if err
         {:error err}
         (let [filtered (filter f (split-lines lines))]
           (<!
            (translate
-            (io-fs/awriteFile dest (join "\n" filtered) {:override true})
+            (fs/awriteFile dest (join "\n" filtered) {:override true})
             (<< "removed ~{filtered} from ~{dest}"))))))))
 ;resources
 
@@ -201,7 +215,7 @@
     (rename \"/tmp/foo\"  \"/tmp/bar\")
   "
   ([src dest]
-   (translate (io-fs/arename src dest) (<< "~{src} moved to ~{dest}")))
+   (translate (fs/arename src dest) (<< "~{src} moved to ~{dest}")))
   ([c src dest]
    (run c rename [src dest])))
 
@@ -235,8 +249,8 @@
   ([c dest state]
    (run c (directory-states state) [dest])))
 
-(def file-states {:present touch
-                  :absent rmfile})
+(def file-states {:present touch :absent rmfile})
+
 (defn file
   "File resource:
     (file \"/tmp/bla\") ; touch a file
@@ -250,23 +264,17 @@
   ([c dest state]
    (run c (file-states state) [dest])))
 
-(def symlink-states {:present mklink})
-
 (defn symlink
   "Symlink resource:
 
     (symlink \"/home/re-ops/.vim/.vimrc\"  \"/home/re-ops/.vimrc\") ; create symlink
   "
-  ([src target]
-   (symlink src target :present))
-  ([a b c]
-   (if (channel? a)
-     (symlink a b c :present)
-     (translate
-      ((symlink-states c) a b)
-      (<< "Symlink from ~{a} to ~{b} is ~(name c)"))))
-  ([c src target state]
-   (run c symlink [src target state])))
+  ([& as]
+   (let [{:keys [ch args state] :or {state :present}} (update (into-spec {} as) :args reverse)
+         fns {:present mklink :absent rmlink}]
+     (if ch
+       (run ch (fns state) args)
+       (run nil (fns state) args)))))
 
 (defn line
   "File line resource either append or remove lines:
@@ -283,3 +291,6 @@
      (if ch
        (run ch (fns state) args)
        (run nil (fns state) args)))))
+
+(comment
+  (info (go (<! (symlink "/home/ronen/foo\\0" :absent))) ::test))
