@@ -119,10 +119,10 @@
 (defn- add-line "Append a line to a file"
   [dest line]
   (go
-    (let [{:keys [present error]} (<! (contains dest line))]
-      (if (and error (nil? present))
+    (let [{:keys [exists error]} (<! (contains dest line))]
+      (if (and error (nil? exists))
         {:error error}
-        (if present
+        (if exists
           {:ok (<< " ~{dest} contains ~{line} skipping") :skip true}
           (<! (translate (fs/awriteFile dest line {:append true}) (<< "added ~{line} to ~{dest}"))))))))
 
@@ -193,7 +193,7 @@
    (run c copy [src dest])))
 
 (defn chown
-  "Change file/directory owner using uid & gid resource:
+  "Change file/directory owner using user/group:
 
     (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\"); using user/group
     (chown \"/home\"/re-ops/.ssh\" \"foo\" \"bar\" {:recursive true}); chown -R
