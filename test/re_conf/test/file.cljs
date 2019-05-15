@@ -2,10 +2,9 @@
   (:require
    [cljs-node-io.fs :refer (adir?)]
    [cljs.core.async :as async :refer [<! go]]
-   [re-conf.resources.file :refer (chown chmod directory line file)]
+   [re-conf.resources.file :refer (symlink chown chmod directory line file)]
    [re-conf.resources.common :refer (ok?)]
-   [re-conf.resources.log :refer (info)]
-   [re-conf.spec.file :refer (stats)]
+   [re-conf.spec.file :refer (stats check-link check-dir contains)]
    [cljs.test :refer-macros  [deftest is testing async]]))
 
 (def fs (js/require "fs"))
@@ -16,24 +15,28 @@
            (let [present (<! (directory "/tmp/2" :present))
                  mode (<! (chmod "/tmp/2" "0777"))
                  stat (:ok (<! (stats "/tmp/2")))
-                 dir (<! (adir? "/tmp/2"))
-                 absent (<! (directory "/tmp/2" :absent))]
+                 was-added (<! (check-dir "/tmp/2"))
+                 absent (<! (directory "/tmp/2" :absent))
+                 was-removed (check-dir "/tmp/2")]
              (is (ok? present))
-             (is (ok? absent))
              (is (ok? mode))
              (is (= 511 (stat :mode)))
-             (is dir)
+             (is (:exists was-added))
+             (is (ok? absent))
+             (is (not (:exists was-removed)))
              (done)))))
 
 (deftest line-manipulation
   (async done
          (go
            (let [present (<! (file "/tmp/3" :present))
-                 append (<! (line "/tmp/3" "key = value" :present))
+                 appended (<! (line "/tmp/3" "key = value" :present))
+                 line-added (<! (contains "/tmp/3" "key = value"))
                  set-key (<! (line  "/tmp/3" "key" "foo" " = " :set))
                  absent (<! (file "/tmp/3" :absent))]
              (is (ok? present))
-             (is (ok? append))
+             (is (ok? appended))
+             (is (:exists line-added))
              (is (ok? set-key))
              (is (ok? absent))
              (done)))))
@@ -48,3 +51,20 @@
              (is (not (ok? append)))
              (is (ok? absent))
              (done)))))
+
+(deftest linking
+  (async done
+         (go
+           (let [touch (<! (file "/tmp/source" :present))
+                 present (<! (symlink "/tmp/source" "/tmp/target"))
+                 was-added (<! (check-link "/tmp/target"))
+                 absent (<! (symlink "/tmp/target" :absent))
+                 was-removed (<! (check-link "/tmp/target"))]
+             (is (ok? touch))
+             (is (ok? present))
+             (is (was-added :exists))
+             (is (ok? absent))
+             (is (not (was-removed :exists)))
+             (done)))))
+
+
