@@ -1,6 +1,6 @@
 sudo: required
 language: clojure
 jdk:
-  - oraclejdk8
+  - openjdk8
 script:
   - /bin/bash travis.sh
