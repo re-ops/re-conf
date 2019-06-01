@@ -24,7 +24,7 @@
   "Get CPU Arch"
   (when-let [output (:output (exec-sync "/usr/bin/arch"))]
     (let [a (clojure.string/trim (str (second output)))]
-      (get {"armv7l" :arm64 "x86_64" :amd64} a :unknown))))
+      (get {"armv7l" "arm64" "x86_64" "amd64"} a :unknown))))
 
 (defn- get- [c k]
   (fn [d]
